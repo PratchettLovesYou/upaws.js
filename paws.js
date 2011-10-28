@@ -13,18 +13,24 @@
    
    paws.
    Execution =
-   Execution = function(expression){
-      this.position = expression
-      this.stack = []
+   Execution = function(something){
+      if (typeof something === 'function')
+         this.alien = something
+      else {
+         this.position = something
+         this.stack = [] }
+      
       this.pristine = true
-      this.locals = [] }
+      this.locals = null }
    
    Execution.prototype.
    complete = function(){
-      return typeof this.position === 'undefined' && this.stack.length === 0 }
+      if (this.alien) return false
+      else            return typeof this.position === 'undefined' && this.stack.length === 0 }
    
    Execution.prototype.
    advance = function(rv) { var juxt, s
+      if (this.alien)      return // FIXME: Do we need to “advance” aliens to coconsume?
       if (this.complete()) return
       
       if (!this.pristine) {
@@ -130,8 +136,9 @@
                                                                                         paws.Stage =
    Stage = function(){
       this.occupant = undefined }
-   Stage.queue = new Array()
-   Stage.queue.push = function(it){
+   
+   Stage.queue = [/* `Staging`s */]
+   Stage.queue.push = function(){
       Array.prototype.push.apply(this, arguments)
       // FIXME: Get a particular instance of `Stage`, and schedule a `realize()`-ation
    }
@@ -141,21 +148,25 @@
       // 2. doesn’t have an associated `requestedMask`,
       // 3. is already responsible for a mask equivalent to the one requested,
       // 4. or whose requested mask doesn’t conflict with any existing ones, excluding its own
-      for (var i = 0, it = Stage.queue[i]; it = Stage.queue[++i]; i < Stage.queue.length) { var
-         alreadyResponsible = function(){
+      for (var i = 0; i < Stage.queue.length; ++i) { var it = Stage.queue[i]
+         console.log(i+'.', it)
+      var alreadyResponsible = function(){
             return Stage.ownershipTable.masks
                .filter(function(mask, j){ return Stage.ownershipTable.blamees[j] === it.stagee })
                .some(function(mask){ return mask.contains(it.requestedMask)}) }
-         requestConflicts = function(){
+       , requestConflicts = function(){
             return Stage.ownershipTable.masks
                .filter(function(mask, j){ return Stage.ownershipTable.blamees[j] !== it.stagee })
                .some(function(mask){ return mask.conflictsWith(it.requestedMask)}) }
          
-         canBeStaged = !it.requestedMask
+       , canBeStaged = !it.requestedMask
                     ||  alreadyResponsible()
                     || !requestConflicts()
          
-         if (canBeStaged) return it } }
+         console.log('->', !it.requestedMask, alreadyResponsible(), requestConflicts(), canBeStaged)
+         
+         if (canBeStaged)
+            return Stage.queue.splice(i, 1)[0] }}
       
                                                                                       paws.Staging =
    Staging = function(stagee, resumptionValue, requestedMask){
@@ -163,11 +174,10 @@
       this.resumptionValue = resumptionValue || undefined
       this.requestedMask = requestedMask || undefined }
    
-   Stage.queue = [/* `Staging`s */]
    Stage.ownershipTable = { blamees: [/* `execution`s */]
                           , masks:   [/* `Mask`s */] }
    
-   Stage.prototype.realize = function(){ var that = this, staging, rv, $$
+   Stage.prototype.realize = function(){ var that = this, staging, resumptionValue, $$
       // Every call to `realize()` will result in *exactly one* execution being staged for
       // realization. Even if this `Stage` is already realizing, then the requested realization will
       // simply be deferred to the next tick. Thus, three immediate-sequential calls to `realize()`
@@ -175,11 +185,16 @@
       if (that.occupant)
          return process.nextTick(function(){ that.realize() })
       
-      if (!staging = Stage.queue.next()) return
+      if ( !(staging = Stage.queue.next()) ) return
       that.occupant = staging.stagee
       resumptionValue = staging.resumptionValue
       
       // TODO: Handle `staging.requestedMask`
+      
+      if (that.occupant.alien) {
+         that.occupant.alien.call(that.occupant, resumptionValue)
+         that.occupant = undefined
+         return }
       
       ;($$ = function(resumptionValue){ var
          pair = that.occupant.advance(resumptionValue)
