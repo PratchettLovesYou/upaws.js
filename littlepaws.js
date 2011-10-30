@@ -20,7 +20,7 @@
    Label = function(string){        Thing.call(this)
       this.string = string || undefined }                                          ;paws.Execution =
    Execution = function(something){ Thing.call(this)
-      if (!something || typeof something === 'function')
+      if (typeof something === 'function')
          this.alien = something || undefined
       else {
          this.position = something || undefined
@@ -29,7 +29,6 @@
       this.pristine = true
       this.locals = null }
  //Execution.prototype.receiver = /* defined below */
-   Execution.prototype.alien = function(){}
    
    Execution.prototype.
    complete = function(){
