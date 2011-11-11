@@ -238,65 +238,71 @@
    // ============== */ var infrastructure, neener_neener = {}, parseNum      ;paws.infrastructure =
    infrastructure = {
       get: function(_, thing, number){ number = parseNum(number)
-         return thing.metadata[number].to }
+         return rv(thing.metadata[number].to) }
     , set: function(_, thing, number, e){ number = parseNum(number)
-         thing.metadata[number] = new Relation(e) }
+         thing.metadata[number] = new Relation(e) ;r()}
     , affix: function(_, thing, e){
-         thing.metadata.push(new Relation(e)) }
+         thing.metadata.push(new Relation(e)) ;r()}
     , unaffix: function(_, thing){
-         return thing.metadata.pop().to }
+         return rv(thing.metadata.pop().to) }
     , prefix: function(_, thing, e){
-         thing.metadata.unshift(new Relation(e)) }
+         thing.metadata.unshift(new Relation(e)) ;r()}
     , unprefix: function(_, thing){
-         return thing.metadata.shift().to }
+         return rv(thing.metadata.shift().to) }
     , remove: function(_, thing, number){ number = parseNum(number)
-         return thing.metadata.splice(number, 1)[0].to }
+         return rv(thing.metadata.splice(number, 1)[0].to) }
       
     , clone: function(_, thing){ var metadata = thing.metadata
          thing = new Empty()
          thing.metadata = metadata.map(function(relation){
             return new Relation(relation.to, relation.responsible) })
-         return thing }
+         return rv(thing) }
     , adopt: function(_, thing, other){
-         thing.metadata = other.metadata.slice() } // IDFK: Utilizes identical `Relation`ships.
+         thing.metadata = other.metadata.slice() ;r()} // IDFK: Utilizes identical `Relation`ships.
       // More note on the above: not sure how I’m going to define these semantics eventually, but
       // for the moment, the only sane way to call these if you don’t want weird behaviour where
-      // changes to the responsibility-cascading grid affect unrelated objects.
+      // changes to the responsibility-cascading grid affect unrelated objects, is to `clone()`
+      // before `adopt()`ing.
       
     , receiver: function(_, thing){
-         return thing.receiver }
+         return rv(thing.receiver) }
     , setReceiver: function(_, thing, receiver){
          if (!receiver || typeof receiver === 'function')
             receiver = new Execution(receiver)
-         thing.receiver = receiver }
+         thing.receiver = receiver ;r()}
       
     , charge: function(_, thing, number){ number = parseNum(number)
-         thing.metadata[number].responsible = true }
+         thing.metadata[number].responsible = true ;r()}
     , discharge: function(_, thing, number){ number = parseNum(number)
-         thing.metadata[number].responsible = false }
+         thing.metadata[number].responsible = false ;r()}
       
     , compare: function(_, thing1, thing2){
-         return thing1 === thing2 } // FIXME: Currently a JavaScript boolean. Need Paws booleans.
+         return rv(thing1 === thing2) } // FIXME: Currently a JavaScript boolean. Need Paws booleans.
       
     , label: {
          compare: function(_, label1, label2){
-            return label1.string === label2.string }
+            return rv(label1.string === label2.string) }
        , clone: function(_, label){
-            return new Label(label.string) } }
+            return rv(new Label(label.string) }) }
       
     , execution: {
          // TODO: way to determine branch-ship
          stage: function(_, execution, resumptionValue){
-            Stage.queue.push(new Staging(execution, resumptionValue)) }
+            Stage.queue.push(new Staging(execution, resumptionValue)) ;r()}
        , branch: function(_, execution){
-            /* NYI */ }
+            rv(/* NYI */) }
          
        , charge: function(_, execution, thing){
             
             
-            return neener_neener }
-      }
-   }
+            return rv(neener_neener) }
+     }
+  }
+   
+   r  = function(_){ _.stagee(/* FIXME: What do we “stage” this with? Why even return at all? */) }
+   rv = function(_, rv){
+      if (_) _.stage(rv)
+      return rv }
    
    parseNum = function(number){
       if (number instanceof Label)     number = parseInt(number.string, 10)
