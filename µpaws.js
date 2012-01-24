@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-
+                                                                                                            //|   Code over here, beyond column 111, is not intended for the consumption of casual readers.
 (function(){ var Thing, Relation, Empty, Label, Execution, Native, Self, Expression, parse
  , fs   = require('fs')
  , path = require('path')
@@ -9,9 +9,10 @@
    
                                                                                         paws.Thing =
    Thing = function(){
-    //this.receiver = super
-      this.metadata = [/*`Relationship`s*/] }                                       ;paws.Relation =
- //Thing.prototype.receiver = /* defined below */
+      this.receiver = /* super */                                                                           /*|*/ undefined
+      this.metadata = [/* Relationship */] }
+   Thing.prototype.receiver = /* defined below */                                                           /*|*/ undefined
+                                                                                     paws.Relation =
    Relation = function(to, responsible){
       this.to = to || undefined
       this.responsible = responsible || undefined }
@@ -28,7 +29,7 @@
       
       this.pristine = true
       this.locals = null }
- //Execution.prototype.receiver = /* defined below */
+   Execution.prototype.receiver = /* defined below */                                                       /*|*/ undefined
    
    Execution.prototype.
    complete = function(){
