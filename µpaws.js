@@ -121,7 +121,7 @@
    // ============== */ var Mask, Stage, Staging, metadataReceiver, executionReceiver   ;paws.Mask =
    Mask = function(owner, roots){
       this.owner = owner || undefined
-      this.roots = roots || new Array() }
+      this.roots = roots || [/* Thing */] }
    
    // Returns an array of all of the things that this `Mask`’s `roots` are responsible for.
    Mask.prototype.flatten = function(){
@@ -142,9 +142,10 @@
    Stage = function(){
       this.occupant = undefined }
    
+   // Non-concurrent implementation! Yay! </sarcasm>
    Stage.current = undefined
    
-   Stage.queue = [/* `Staging`s */]
+   Stage.queue = [/* Staging */]
    Stage.queue.push = function(){
       Array.prototype.push.apply(this, arguments)
       // FIXME: Get a particular instance of `Stage`, and schedule a `realize()`-ation
@@ -181,8 +182,8 @@
       this.resumptionValue = resumptionValue || undefined
       this.requestedMask = requestedMask || undefined }
    
-   Stage.ownershipTable = { blamees: [/* `execution`s */]
-                          , masks:   [/* `Mask`s */] }
+   Stage.ownershipTable = { blamees: [/* execution */]
+                          , masks:   [/* Mask */] }
    
    Stage.prototype.realize = function(){ var that = this, staging, resumptionValue, $$
       // Every call to `realize()` will result in *exactly one* execution being staged for
@@ -193,7 +194,8 @@
          return process.nextTick(function(){ that.realize() })
       Stage.current = that
       
-      if ( !(staging = Stage.queue.next()) ) return
+      if (!(
+         staging = Stage.queue.next() )) return
       that.occupant = staging.stagee
       resumptionValue = staging.resumptionValue
       
@@ -203,12 +205,16 @@
          Stage.ownershipTable.blamees.push(that.occupant)
          Stage.ownershipTable.masks.push(that.requestedMask) }
       
+      // Finally!
+      // First, we handle the special-case of an alien Execution, and immediately return to
+      // short-circuit handling of native executions;
       if (that.occupant.alien) {
          that.occupant.alien.call(that.occupant, resumptionValue)
          that.occupant = undefined
          Stage.current = undefined
          return }
       
+      // NYI: ... and then, failing that, proceed to handle native executions.
       ;($$ = function(resumptionValue){ var
          pair = that.occupant.advance(resumptionValue)
          // find juxtaposition handler
@@ -237,66 +243,52 @@
    
    /* Alien families
    // ============== */ var infrastructure, neener_neener = {}, parseNum      ;paws.infrastructure =
+   // FIXME: Much of the code here is a lie. This is a direct, on-the-stack JavaScript
+   //        implementation, which Will Not Work™. Many of these aliens need do MSR or mutation, and
+   //        thus need to charge and discharge things *themselves*, which means they (these aliens)
+   //        need to propagate through the staging queue and whatnot. This is going to be complex ...
    infrastructure = {
-      get: function(_, thing, number){ number = parseNum(number)
-         return rv(thing.metadata[number].to) }
-    , set: function(_, thing, number, e){ number = parseNum(number)
-         thing.metadata[number] = new Relation(e) ;r()}
-    , affix: function(_, thing, e){
-         thing.metadata.push(new Relation(e)) ;r()}
-    , unaffix: function(_, thing){
-         return rv(thing.metadata.pop().to) }
-    , prefix: function(_, thing, e){
-         thing.metadata.unshift(new Relation(e)) ;r()}
-    , unprefix: function(_, thing){
-         return rv(thing.metadata.shift().to) }
-    , remove: function(_, thing, number){ number = parseNum(number)
-         return rv(thing.metadata.splice(number, 1)[0].to) }
+           get: function(thing, number){ return thing.metadata[parseNum(number)].to }
+    ,      set: function(thing, number, e){     thing.metadata[parseNum(number)] = new Relation(e) }
+    ,    affix: function(thing, e){             thing.metadata.push(new Relation(e)) }
+    ,  unaffix: function(thing){         return thing.metadata.pop().to }
+    ,   prefix: function(thing, e){             thing.metadata.unshift(new Relation(e)) }
+    , unprefix: function(thing){         return thing.metadata.shift().to }
+    ,   remove: function(thing, number){ return thing.metadata.splice(parseNum(number), 1)[0].to }
       
-    , clone: function(_, thing){ var metadata = thing.metadata
+    , clone: function(thing){ var metadata = thing.metadata
          thing = new Empty()
          thing.metadata = metadata.map(function(relation){
             return new Relation(relation.to, relation.responsible) })
-         return rv(thing) }
-    , adopt: function(_, thing, other){
-         thing.metadata = other.metadata.slice() ;r()} // IDFK: Utilizes identical `Relation`ships.
+         return thing }
+    , adopt: function(thing, other){ thing.metadata = other.metadata.slice() } // IDFK: Utilizes identical `Relation`ships.
       // More note on the above: not sure how I’m going to define these semantics eventually, but
       // for the moment, the only sane way to call these if you don’t want weird behaviour where
       // changes to the responsibility-cascading grid affect unrelated objects, is to `clone()`
       // before `adopt()`ing.
       
-    , receiver: function(_, thing){
-         return rv(thing.receiver) }
-    , setReceiver: function(_, thing, receiver){
+    ,    receiver: function(thing){ return thing.receiver }
+    , setReceiver: function(thing, receiver){
          if (!receiver || typeof receiver === 'function')
             receiver = new Execution(receiver)
-         thing.receiver = receiver ;r()}
+         thing.receiver = receiver }
       
-    , charge: function(_, thing, number){ number = parseNum(number)
-         thing.metadata[number].responsible = true ;r()}
-    , discharge: function(_, thing, number){ number = parseNum(number)
-         thing.metadata[number].responsible = false ;r()}
+    ,    charge: function(thing, number){ thing.metadata[parseNum(number)].responsible = true }
+    , discharge: function(thing, number){ thing.metadata[parseNum(number)].responsible = false }
       
-    , compare: function(_, thing1, thing2){
-         return rv(thing1 === thing2) } // FIXME: Currently a JavaScript boolean. Need Paws booleans.
+    , compare: function(thing1, thing2){ return thing1 === thing2 } // FIXME: Currently a JavaScript boolean. Need Paws booleans.
       
     , label: {
-         compare: function(_, label1, label2){
-            return rv(label1.string === label2.string) }
-       , clone: function(_, label){
-            return rv(new Label(label.string) }) }
+         compare: function(label1, label2){ return label1.string === label2.string }
+       ,   clone: function(label){ return new Label(label.string) } }
       
     , execution: {
          // TODO: way to determine branch-ship
-         stage: function(_, execution, resumptionValue){
-            Stage.queue.push(new Staging(execution, resumptionValue)) ;r()}
-       , branch: function(_, execution){
-            rv(/* NYI */) }
+         stage: function(execution, resumptionValue){ Stage.queue.push(new Staging(execution, resumptionValue)) }
+       , branch: function(execution){ rv(/* NYI */) }
          
-       , charge: function(_, execution, thing){
-            
-            
-            return rv(neener_neener) }
+       , charge: function(execution, thing){
+            return neener_neener }
      }
   }
    
