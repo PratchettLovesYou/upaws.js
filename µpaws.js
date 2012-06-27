@@ -132,12 +132,12 @@
                return acc }, acc) })(acc, root) }, new Array()) }
    
    // Compare with a foreign mask for conflicting responsibility
-   Mask.prototype.conflictsWith = function(far){ far = far.flatten()
+   Mask.prototype.conflictsWith = function(far){ if (far === this) return false; far = far.flatten()
       return this.flatten().some(function(it){ return far.indexOf(it) === -1 }) }
    
    // Ascertain if a foreign mask is a subset of this mask
-   Mask.prototype.contains = function(far){ far = far.flatten().intersect(this.flatten())
-      return far.length === 0 }
+   Mask.prototype.contains = function(far){ if (far === this) return true
+      return far.flatten().intersect(this.flatten()).length === 0 }
                                                                                         paws.Stage =
    Stage = function(){
       this.occupant = undefined }
@@ -247,6 +247,7 @@
    //        implementation, which Will Not Work™. Many of these aliens need do MSR or mutation, and
    //        thus need to charge and discharge things *themselves*, which means they (these aliens)
    //        need to propagate through the staging queue and whatnot. This is going to be complex ...
+   // Then again, this is a non-concurrent implementation. Maybe that's fine? (Nope. Chuck Testa.)
    infrastructure = {
            get: function(thing, number){ return thing.metadata[parseNum(number)].to }
     ,      set: function(thing, number, e){     thing.metadata[parseNum(number)] = new Relation(e) }
