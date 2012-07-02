@@ -10,7 +10,7 @@
                                                                                         paws.Thing =
    Thing = function(){
       this.receiver = /* super */                                                                           /*|*/ undefined
-      this.metadata = [/* Relationship */] }
+      this.metadata = [/* Relation */] }
    Thing.prototype.receiver = /* defined below */                                                           /*|*/ undefined
                                                                                      paws.Relation =
    Relation = function(to, responsible){
@@ -127,8 +127,8 @@
    Mask.prototype.flatten = function(){
       return this.roots.reduce(function(acc, root){ var $$
          return ($$ = function(acc, it){ acc.push(it)
-            return it.relationships.reduce(function(acc, relationship){
-               if (relationship.responsible) acc.push(relationship.target)
+            return it.metadata.reduce(function(acc, relation){
+               if (relation.responsible) acc.push(relation.target)
                return acc }, acc) })(acc, root) }, new Array()) }
    
    // Compare with a foreign mask for conflicting responsibility
