@@ -22,12 +22,12 @@
       this.string = string || undefined }                                          ;paws.Execution =
    Execution = function(something){ Thing.call(this)
       if (typeof something === 'function')
-         this.alien = something || undefined
+         this.alien = something
       else {
+         this.pristine = true
          this.position = something || undefined
          this.stack = [] }
       
-      this.pristine = true
       this.locals = null }
    Execution.prototype.receiver = /* defined below */                                                       /*|*/ undefined
    
