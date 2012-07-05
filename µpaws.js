@@ -88,16 +88,16 @@
    
    cPaws.
    parse = function(text){ var i = 0
-    , character = function(c){ return text[i] === c && i++ }
+    , character = function(c){ return text[i] === c && ++i }
     , whitespace = function(){ while (character(' ')); return true }
-    , braces = function(char, constructor) {
+    , braces = function(chars, constructor) {
          return function(){ var $
-            if (whitespace() && character(char) && ($ = expr()) && whitespace() && character(char))
+            if (whitespace() && character(chars[0]) && ($ = expr()) && whitespace() && character(chars[1]))
                return new constructor($)
             else return false } }
       
-    , paren = braces('(', function(_){return _})
-    , scope = braces('{', Execution)
+    , paren = braces('()', function(_){return _})
+    , scope = braces('{}', Execution)
     , label = function(){ whitespace(); var $ = ''
          while ( text[i] && cPaws.labelCharacters.test(text[i]) )
             $ = $.concat(text[i++])
