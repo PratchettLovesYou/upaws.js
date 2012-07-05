@@ -62,6 +62,7 @@
          this.position = this.position.next.contents }
       
       if (typeof this.position.next === 'undefined') {
+         console.log('OI!')
          s = this.stack.pop()
          juxt = { context: this, left: s.value, right: this.position.contents }
          this.position = s.next
@@ -315,12 +316,24 @@
    
    /* === == === /!\ === == === */
    if (require && module && require.main === module) {                                           var
-      it = path.normalize(process.argv[2])
+      it = path.normalize(process.argv[3])
       process.title = 'dem pawses'
       
       fs.stat(it, function(_, stats){ if(_)throw(_)
          fs.readFile(it, 'utf8', function(_, data){
-            var p = paws.cPaws.parse(data)
-            console.log(util.inspect(p , false, 10)) }) })
-   }
+            switch (process.argv[2]) {
+            
+            case 'parse':
+               console.log(util.inspect( cPaws.parse(data), false, 10 ))
+            
+break;      case 'advance': var juxt, i = 0
+             , ex = new Execution(cPaws.parse(data))
+               while (!ex.complete()) {
+                  juxt = ex.advance(new Label(i.toString()))
+                  console.log( i++
+                             + ':  ' + util.inspect(juxt.left  && juxt.left.string)
+                             + ' < ' + util.inspect(juxt.right && juxt.right.string) )}
+            }
+   }) }) }
+
 if(module)module.exports=paws})()
