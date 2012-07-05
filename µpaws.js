@@ -57,12 +57,11 @@
       
       this.pristine = false
       
-      while (this.position.next.contents instanceof Expression) {
+      while (this.position.next && this.position.next.contents instanceof Expression) {
          this.stack.push({value: this.position.contents, next: this.position.next.next })
          this.position = this.position.next.contents }
       
       if (typeof this.position.next === 'undefined') {
-         console.log('OI!')
          s = this.stack.pop()
          juxt = { context: this, left: s.value, right: this.position.contents }
          this.position = s.next
