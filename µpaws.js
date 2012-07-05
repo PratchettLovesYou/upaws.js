@@ -1,6 +1,6 @@
 #!/usr/bin/env node
                                                                                                             //|   Code over here, beyond column 111, is not intended for the consumption of casual readers.
-(function(){ var Thing, Relation, Empty, Label, Execution, Native, Self, Expression, parse
+(function(){ var Thing, Relation, Empty, Label, Execution, Native, Self, Expression, cPaws
  , fs   = require('fs')
  , path = require('path')
  , util = require('util')
@@ -75,45 +75,40 @@
    
    /* Parsing
    // ======= */                                                                   paws.Expression =
-   Expression = function(contents, next){ this.contents = contents; this.next = next }
+   Expression = function(contents, next){
+      this.contents = contents || undefined
+      this.next = next || undefined }
    
-   paws.Expression.prototype.
-   append = function(next) { var pos = this
-      while (pos.next) { pos = pos.next }
+   Expression.prototype.
+   append = function(next){ var pos = this
+      while (pos.next) pos = pos.next
       pos.next = next }
+                                                                                                            /*|*/ paws.cPaws = cPaws = new Object()
+   cPaws.labelCharacters = /[^(){} ]/ // Not currently supporting quote-delimited labels
    
-                                                                                       paws.parse =
-   parse = function(text){ var i = 0, e
-      e = expr()
-      console.log(text.slice(i, text.length))
-      return e
+   cPaws.
+   parse = function(text){ var i = 0
+    , character = function(c){ return text[i] === c && i++ }
+    , whitespace = function(){ while (character(' ')); return true }
+    , braces = function(char, constructor) {
+         return function(){ var $
+            if (whitespace() && character(char) && ($ = expr()) && whitespace() && character(char))
+               return new constructor($)
+            else return false } }
       
-      function expr() { var result = new Expression(null), t
-         while (t = (paren() || scope() || label())) { result.append(new Expression(t)) }
-         return result }
+    , paren = braces('(', function(_){return _})
+    , scope = braces('{', Execution)
+    , label = function(){ whitespace(); var $ = ''
+         while ( text[i] && cPaws.labelCharacters.test(text[i]) )
+            $ = $.concat(text[i++])
+         return $ && new Label($) }
       
-      function paren() { var result
-         if (whitespace() && character('(') && (result = expr()) && whitespace() && character(')')) {
-            return result }
-         else {
-            return false } }
+    , expr = function(){ var _, $ = new Expression()
+         while (_ = paren() || scope() || label() )
+            $.append(new Expression(_))
+         return $ }
       
-      function scope() { var result
-         if (whitespace() && character('{') && (result = expr()) && whitespace() && character('}')) {
-            return new Execution(result) }
-         else {
-            return false } }
-      
-      function label() { var result = ''
-         whitespace()
-         while ("(){} ".indexOf(text[i]) === -1 && i < text.length) {
-            result = result.concat(text[i]); i++ }
-         return result.length > 0 ? new Label(result) : false }
-      
-      function whitespace() { while (text[i] === ' ' && i < text.length) { i++ }; return true }
-      
-      function character(c) { if (text[i] === c) { i++; return true } else { return false } }
-   }
+      return expr() }
    
    
    
@@ -325,7 +320,7 @@
       
       fs.stat(it, function(_, stats){ if(_)throw(_)
          fs.readFile(it, 'utf8', function(_, data){
-            var p = paws.parse(data)
-            console.log(util.inspect( p , false, 10)) }) })
+            var p = paws.cPaws.parse(data)
+            console.log(util.inspect(p , false, 10)) }) })
    }
 if(module)module.exports=paws})()
