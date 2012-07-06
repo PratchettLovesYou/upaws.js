@@ -180,7 +180,8 @@
    Stage.ownershipTable = { blamees: [/* execution */]
                           , masks:   [/* Mask */] }
    
-   Stage.prototype.realize = function(){ var that = this, staging, resumptionValue, $$
+   Stage.prototype.realize = function(that){ var staging, resumptionValue, $$
+                               that = that || this
       // Every call to `realize()` will result in *exactly one* execution being staged for
       // realization. Even if this `Stage` is already realizing, then the requested realization will
       // simply be deferred to the next tick. Thus, three immediate-sequential calls to `realize()`
@@ -235,6 +236,17 @@
    //   }
                                                                       Execution.prototype.receiver =
    executionReceiver = function(){}
+   
+   Stage.prototype.
+   intervalID = 0
+   
+   Stage.prototype.
+   start = function(){
+      if (!this.intervalID)
+           this.intervalID = setInterval(this.realize, 50, this) }                                          /*|*/;Stage.prototype.
+   stop  = function(){
+      if ( this.intervalID)
+           this.intervalID = clearInterval(this.intervalID) }
    
    /* Alien families
    // ============== */ var infrastructure, neener_neener = {}, parseNum      ;paws.infrastructure =
