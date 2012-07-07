@@ -135,16 +135,14 @@
       return far.flatten().intersect(this.flatten()).length === 0 }
                                                                                         paws.Stage =
    Stage = function(){
-      this.occupant = undefined }
+      this.occupant = undefined
+      if (!Stage.default) Stage.default = this }
    
    // Non-concurrent implementation! Yay! </sarcasm>
    Stage.current = undefined
+   Stage.default = undefined
    
    Stage.queue = [/* Staging */]
-   Stage.queue.push = function(){
-      Array.prototype.push.apply(this, arguments)
-      // FIXME: Get a particular instance of `Stage`, and schedule a `realize()`-ation
-   }
    Stage.queue.next = function(){
       // We look for the foremost element of the queue that either:
       // 1. isn’t already staged (inapplicable to this implementation),
@@ -289,7 +287,9 @@
       
     , execution: {
          // TODO: way to determine branch-ship
-         stage: function(execution, resumptionValue){ Stage.queue.push(new Staging(execution, resumptionValue)) }
+         stage: function(execution, resumptionValue){
+            Stage.queue.push(new Staging(execution, resumptionValue))
+            if (Stage.default) Stage.default.realize(); else new Stage().realize() }
        , branch: function(execution){ rv(/* NYI */) }
          
        , charge: function(execution, thing){
