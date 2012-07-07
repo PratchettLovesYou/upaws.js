@@ -21,10 +21,11 @@
    Label = function(string){        Thing.call(this)
       this.string = string || undefined }                                          ;paws.Execution =
    Execution = function(something){ Thing.call(this)
-      if (typeof something === 'function')
-         this.alien = something
-      else {
          this.pristine = true
+      if (typeof something === 'function') {
+         this.alien = true
+         this.subs = Array.prototype.slice.call(arguments) }
+      else {
          this.position = something || undefined
          this.stack = [] }
       
@@ -33,13 +34,13 @@
    
    Execution.prototype.
    complete = function(){
-      if (this.alien) return false
+      if (this.alien) return !this.subs.length
       else            return typeof this.position === 'undefined' && this.stack.length === 0 }
    
    Execution.prototype.
    advance = function(rv) { var juxt, s
-      if (this.alien)      return // FIXME: Do we need to “advance” aliens to coconsume?
       if (this.complete()) return
+      if (this.alien)      return this.subs.splice(0, 1)[0]
       
       if (!this.pristine) {
          if (typeof this.position === 'undefined') { 
@@ -200,7 +201,7 @@
       // First, we handle the special-case of an alien Execution, and immediately return to
       // short-circuit handling of native executions;
       if (that.occupant.alien) {
-         that.occupant.alien.call(that.occupant, resumptionValue)
+         that.occupant.advance().call(that.occupant, resumptionValue)
          that.occupant = undefined
          Stage.current = undefined
          return }
