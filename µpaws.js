@@ -152,8 +152,7 @@
       // 3. is already responsible for a mask equivalent to the one requested,
       // 4. or whose requested mask doesn’t conflict with any existing ones, excluding its own
       for (var i = 0; i < Stage.queue.length; ++i) { var it = Stage.queue[i]
-         console.log(i+'.', it)
-      var alreadyResponsible = function(){
+          alreadyResponsible = function(){
             return Stage.ownershipTable.masks
                .filter(function(mask, j){ return Stage.ownershipTable.blamees[j] === it.stagee })
                .some(function(mask){ return mask.contains(it.requestedMask)}) }
@@ -165,8 +164,6 @@
        , canBeStaged = !it.requestedMask
                     ||  alreadyResponsible()
                     || !requestConflicts()
-         
-         console.log('->', !it.requestedMask, alreadyResponsible(), requestConflicts(), canBeStaged)
          
          if (canBeStaged)
             return Stage.queue.splice(i, 1)[0] }}
