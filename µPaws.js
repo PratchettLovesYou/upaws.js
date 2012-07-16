@@ -175,6 +175,10 @@
    
    Stage.ownershipTable = { blamees: [/* execution */]
                           , masks:   [/* Mask */] }
+   Stage.ownershipTable.
+   add = function(mask){
+      Stage.ownershipTable.blamees.push(that.occupant)
+      Stage.ownershipTable.masks.push(that.requestedMask) }
    
    Stage.prototype.realize = function(that){ var staging, resumptionValue, $$
                                that = that || this
@@ -193,9 +197,7 @@
       
       // We’ve already verified the requested mask’s availability, prior to accepting this
       // `Staging`, so no need to re-verify. If it’s defined, then we add it to the table.
-      if (that.requestedMask) {
-         Stage.ownershipTable.blamees.push(that.occupant)
-         Stage.ownershipTable.masks.push(that.requestedMask) }
+      if (that.requestedMask) Stage.ownershipTable.add(that.requestedMask)
       
       // Finally!
       // First, we handle the special-case of an alien Execution, and immediately return to
@@ -290,13 +292,22 @@
          // TODO: way to determine branch-ship
          stage: function(execution, resumptionValue){
             Stage.queue.push(new Staging(execution, resumptionValue))
-            if (Stage.default) Stage.default.realize(); else new Stage().realize() }
+         ;( Stage.default ? Stage.default : new Stage() ).realize() }
+         
        , branch: function(execution){ rv(/* NYI */) }
          
-       , charge: function(execution, thing){
-            return neener_neener }
-     }
-  }
+         // FIXME: Not exactly correct semantics, as this doesn't unstage the current execution.
+       , charge: function(_, execution, thing){
+            if (_ === execution) {
+               Stage.queue.push(new Staging(execution, undefined, thing))
+            ;( Stage.default ? Stage.default : new Stage() ).realize() }
+            else {
+               // FIXME: Needs to verify that the requested mask is a subgraph of the caller's,
+               //           or ensure the mask is requested next time the execution is staged
+               Stage.ownershipTable.add(new Mask(execution, [thing])) }}
+         
+      }
+   }
    
    r  = function(_){ _.stagee(/* FIXME: What do we “stage” this with? Why even return at all? */) }
    rv = function(_, rv){
