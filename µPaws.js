@@ -176,9 +176,9 @@
    Stage.ownershipTable = { blamees: [/* execution */]
                           , masks:   [/* Mask */] }
    Stage.ownershipTable.
-   add = function(mask){
-      Stage.ownershipTable.blamees.push(that.occupant)
-      Stage.ownershipTable.masks.push(that.requestedMask) }
+   add = function(requestedMask){
+      Stage.ownershipTable.blamees.push(Stage.current.occupant)
+      Stage.ownershipTable.masks.push(requestedMask) }
    
    Stage.prototype.realize = function(that){ var staging, resumptionValue, $$
                                that = that || this
@@ -197,7 +197,7 @@
       
       // We’ve already verified the requested mask’s availability, prior to accepting this
       // `Staging`, so no need to re-verify. If it’s defined, then we add it to the table.
-      if (that.requestedMask) Stage.ownershipTable.add(that.requestedMask)
+      if (staging.requestedMask) Stage.ownershipTable.add(staging.requestedMask)
       
       // Finally!
       // First, we handle the special-case of an alien Execution, and immediately return to
@@ -299,7 +299,7 @@
          // FIXME: Not exactly correct semantics, as this doesn't unstage the current execution.
        , charge: function(_, execution, thing){
             if (_ === execution) {
-               Stage.queue.push(new Staging(execution, undefined, thing))
+               Stage.queue.push(new Staging(execution, undefined, new Mask(execution, [thing])))
             ;( Stage.default ? Stage.default : new Stage() ).realize() }
             else {
                // FIXME: Needs to verify that the requested mask is a subgraph of the caller's,
@@ -328,7 +328,8 @@
       this.slice().forEach(function(e){ var kill, iA, iB
          if (that.indexOf(e) + them.indexOf(e) > -2) {
             that.deleteAll(e)
-            them.deleteAll(e) } }) }
+            them.deleteAll(e) } })
+      return this }
    Array.prototype.union = function(){ /* NYI */ }
    Array.prototype.deleteAll = function(element){ var i
       while ((i = this.indexOf(element)) !== -1)
