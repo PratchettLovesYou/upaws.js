@@ -187,7 +187,9 @@
       // simply be deferred to the next tick. Thus, three immediate-sequential calls to `realize()`
       // will result in `realize()` executing three times on three subsequent ticks.
       if (Stage.current)
-         return process.nextTick(function(){ that.realize() })
+         return process.nextTick(function(){
+            Stage.current = undefined // FIXME: I have no idea where this infinite loop is from.
+            that.realize() })
       Stage.current = that
       
       if (!(
