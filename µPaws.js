@@ -151,14 +151,14 @@
       // 3. is already responsible for a mask equivalent to the one requested,
       // 4. or whose requested mask doesn’t conflict with any existing ones, excluding its own
       for (var i = 0; i < Stage.queue.length; ++i) { var it = Stage.queue[i]
-          alreadyResponsible = function(){
+         alreadyResponsible = function(){
             return Stage.ownershipTable.masks
                .filter(function(mask, j){ return Stage.ownershipTable.blamees[j] === it.stagee })
-               .some(function(mask){ return mask.contains(it.requestedMask)}) }
+                 .some(function(mask)   { return mask     .contains(it.requestedMask)          }) }
        , requestConflicts = function(){
             return Stage.ownershipTable.masks
                .filter(function(mask, j){ return Stage.ownershipTable.blamees[j] !== it.stagee })
-               .some(function(mask){ return mask.conflictsWith(it.requestedMask)}) }
+                 .some(function(mask)   { return mask.conflictsWith(it.requestedMask)          }) }
          
        , canBeStaged = !it.requestedMask
                     ||  alreadyResponsible()
@@ -203,10 +203,10 @@
       // First, we handle the special-case of an alien Execution, and immediately return to
       // short-circuit handling of native executions;
       if (that.occupant.alien) {
-         that.occupant.advance().call(that.occupant, resumptionValue)
-         that.occupant = undefined
-         Stage.current = undefined
-         return }
+         if (!that.occupant.complete())
+              that.occupant.advance()  .call(that.occupant, resumptionValue)
+         
+         return that.occupant = Stage.current = undefined }
       
       // NYI: ... and then, failing that, proceed to handle native executions.
       ;($$ = function(resumptionValue){ var
