@@ -7,8 +7,9 @@ Object.keys(paws)
       global[key] = paws[key] })
 
 ~function(){ var
-   red   = function($){ return "\033[31;47m"+$+"\033[0m" }
- , green = function($){ return "\033[32;47m"+$+"\033[0m" }
+   
+   red   = function($){ return "\033[37;41m"+$+"\033[0m" }
+ , green = function($){ return "\033[37;42m"+$+"\033[0m" }
    
    // The following is something like:
    //    
@@ -65,9 +66,10 @@ Object.keys(paws)
    foo._id_ = 'foo'
    bar._id_ = 'bar'
    
+   console.log("=== Let's go! ===")
+   new Stage().start()
+   
    infrastructure.execution.stage(foo)
    infrastructure.execution.stage(bar)
    
-console.log("=== Let's go!")
-new Stage().start() }()
-
+}()
