@@ -34,42 +34,42 @@ Object.keys(paws)
    //    stage (foo)
    //    stage (bar)
    //    
- , arbitraryLock = new Empty()
+ , some_thing = new Empty()
    
- , foo = new Execution(
-      function(rv){
-         console.log(red('(zero.)'))
-         infrastructure.execution.charge(this, this, arbitraryLock) }
-    , function(rv){
-         console.log(red('One,'))
-         infrastructure.execution.charge(this, this, arbitraryLock) }
-    , function(rv){
-         console.log(red('two,'))
-         infrastructure.execution.charge(this, this, arbitraryLock) }
-    , function(rv){
-         console.log(red('three!')) })
+ , greedy = new Execution(                                                             function(rv){
+/*~*/ console.log("A.. some_thing") /*~*/
+      infrastructure.execution .charge(this, this, some_thing)
+      infrastructure.execution.unstage(this, this)                                   },function(rv){
+/*~*/ console.log("A++ some_thing") /*~*/
+      setTimeout(
+         infrastructure.execution.stage
+                               , 2500, this, this)
+      infrastructure.execution.unstage(this, this)                                   },function(rv){
+/*~*/ console.log("A-- some_thing") /*~*/
+      infrastructure.execution.unstage(this, this)                                   } )
    
- , bar = new Execution(
-      function(rv){
-         console.log(green('(zee.)'))
-         infrastructure.execution.charge(this, this, arbitraryLock) }
-    , function(rv){
-         console.log(green('Aeh,'))
-         infrastructure.execution.charge(this, this, arbitraryLock) }
-    , function(rv){
-         console.log(green('bee,'))
-         infrastructure.execution.charge(this, this, arbitraryLock) }
-    , function(rv){
-         console.log(green('cee!')) })
+ , desirous = new Execution(                                                           function(rv){
+/*~*/ console.log("B.. some_thing") /*~*/
+      infrastructure.execution .charge(this, this, some_thing)
+      infrastructure.execution.unstage(this, this)                                   },function(rv){
+/*~*/ console.log("B++ some_thing") /*~*/
+      setTimeout(
+         infrastructure.execution.stage
+                               , 2500, this, this)
+      infrastructure.execution.unstage(this, this)                                   },function(rv){
+      
+/*~*/ console.log("B-- some_thing") /*~*/
+      infrastructure.execution.unstage(this, this)                                   } )
    
-   arbitraryLock._id_ = 'arbitraryLock'
-   foo._id_ = 'foo'
-   bar._id_ = 'bar'
+   
+   some_thing._id_ = 'some_thing'
+   greedy._id_ = 'greedy'
+   desirous._id_ = 'desirous'
    
    console.log("=== Let's go! ===")
    new Stage().start()
    
-   infrastructure.execution.stage(foo)
-   infrastructure.execution.stage(bar)
+   infrastructure.execution.stage(undefined, greedy)
+   infrastructure.execution.stage(undefined, desirous)
    
 }()

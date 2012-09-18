@@ -289,8 +289,9 @@
        ,   clone: function(label){ return new Label(label.string) } }
       
     , execution: {
+         unstage: function(){ /* noop */ }
          // TODO: way to determine branch-ship
-         stage: function(execution, resumptionValue){
+       , stage: function(_, execution, resumptionValue){ ;debugger;
             Stage.queue.push(new Staging(execution, resumptionValue))
          ;( Stage.default ? Stage.default : new Stage() ).realize() }
          
