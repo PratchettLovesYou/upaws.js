@@ -32,6 +32,8 @@ Object.keys(paws)
     , function(rv){
          console.log(green('cee!')) })
    
+   arbitraryLock._id_ = "arbitraryLock"
+   
    infrastructure.execution.stage(foo)
    infrastructure.execution.stage(bar)
    
