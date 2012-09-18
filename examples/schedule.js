@@ -55,7 +55,7 @@ Object.keys(paws)
 /*~*/ console.log("B++ some_thing") /*~*/
       setTimeout(
          infrastructure.execution.stage
-                               , 2500, this, this)
+                               , 1500, this, this)
       infrastructure.execution.unstage(this, this)                                   },function(rv){
       
 /*~*/ console.log("B-- some_thing") /*~*/
