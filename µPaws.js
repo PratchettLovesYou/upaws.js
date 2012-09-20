@@ -165,7 +165,7 @@
                     || !requestConflicts()
          
          if (canBeStaged)
-            return Stage.queue.splice(i, 1)[0] }}
+            return Stage.queue.splice(i,1)[0] }}
       
                                                                                       paws.Staging =
    Staging = function(stagee, resumptionValue, requestedMask){
@@ -177,8 +177,13 @@
                           , masks:   [/* Mask */] }
    Stage.ownershipTable.
    add = function(requestedMask){
-      Stage.ownershipTable.blamees.push(Stage.current.occupant)
-      Stage.ownershipTable.masks.push(requestedMask) }
+      this.blamees.push(Stage.current.occupant)
+      this.masks.push(requestedMask) }                                                                      /*|*/ ;Stage.ownershipTable.
+   invalidate = function(execution){ var that = this
+      that.blamees.forEach(function(blamee, i){
+         if (blamee === execution) {
+            that.blamees.splice(i,1)
+            that.masks  .splice(i,1) } }) }
    
    Stage.prototype.realize = function(that){ var staging, resumptionValue, $$
                                that = that || this
@@ -201,27 +206,31 @@
       // `Staging`, so no need to re-verify. If it’s defined, then we add it to the table.
       if (staging.requestedMask) Stage.ownershipTable.add(staging.requestedMask)
       
-      // Finally!
-      // First, we handle the special-case of an alien Execution, and immediately return to
-      // short-circuit handling of native executions;
-      if (that.occupant.alien) {
-         if (!that.occupant.complete())
-              that.occupant.advance()  .call(that.occupant, resumptionValue)
+      ~function(){
+         // Finally!
+         // First, we handle the special-case of an alien Execution, and immediately return to
+         // short-circuit handling of native executions;
+         if (that.occupant.alien) {
+            if (!that.occupant.complete())
+                 that.occupant.advance()   .call(that.occupant, resumptionValue)
+            return }
          
-         return that.occupant = Stage.current = undefined }
+         // NYI: ... and then, failing that, proceed to handle native executions.
+         ;($$ = function(resumptionValue){ var
+            pair = that.occupant.advance(resumptionValue)
+            // find juxtaposition handler
+            // if alien, stack on an argument
+            //    if has all arguments, call on-the-stack
+            // if denizen, "call" pattern
+            //    create staging
+            //    (are we going to transfer ownerships for a call pattern?)
+            //    queue staging
+            //    unstage self
+         } )(resumptionValue)
+      }()
       
-      // NYI: ... and then, failing that, proceed to handle native executions.
-      ;($$ = function(resumptionValue){ var
-         pair = that.occupant.advance(resumptionValue)
-         // find juxtaposition handler
-         // if alien, stack on an argument
-         //    if has all arguments, call on-the-stack
-         // if denizen, "call" pattern
-         //    create staging
-         //    (are we going to transfer ownerships for a call pattern?)
-         //    queue staging
-         //    unstage self
-      } )(resumptionValue)
+      if (that.occupant.complete())
+         Stage.ownershipTable.invalidate(that.occupant)
       
       that.occupant = undefined
       Stage.current = undefined }
