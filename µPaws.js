@@ -129,7 +129,7 @@
    
    // Compare with a foreign mask for conflicting responsibility
    Mask.prototype.conflictsWith = function(far){ if (far === this) return false; far = far.flatten()
-      return this.flatten().some(function(it){ return far.indexOf(it) === -1 }) }
+      return this.flatten().some(function(it){ return far.indexOf(it) !== -1 }) }
    
    // Ascertain if a foreign mask is a subset of this mask
    Mask.prototype.contains = function(far){ if (far === this) return true
@@ -293,7 +293,7 @@
     , execution: {
          unstage: function(){ /* noop */ }
          // TODO: way to determine branch-ship
-       , stage: function(_, execution, resumptionValue){ ;debugger;
+       , stage: function(_, execution, resumptionValue){
             Stage.queue.push(new Staging(execution, resumptionValue))
          ;( Stage.default ? Stage.default : new Stage() ).realize() }
          
