@@ -35,6 +35,7 @@ Object.keys(paws)
    //    stage (bar)
    //    
  , some_thing = new Empty()
+ , some_child = new Empty()
    
  , greedy = new Execution(                                                             function(rv){
 /*~*/ console.log("A.. some_thing") /*~*/
@@ -49,25 +50,29 @@ Object.keys(paws)
       infrastructure.execution.unstage(this, this)                                   } )
    
  , desirous = new Execution(                                                           function(rv){
-/*~*/ console.log("B.. some_thing") /*~*/
-      infrastructure.execution .charge(this, this, some_thing)
+/*~*/ console.log("B.. some_child") /*~*/
+      infrastructure.execution .charge(this, this, some_child)
       infrastructure.execution.unstage(this, this)                                   },function(rv){
-/*~*/ console.log("B++ some_thing") /*~*/
+/*~*/ console.log("B++ some_child") /*~*/
       setTimeout(
          infrastructure.execution.stage
                                , 1500, this, this)
       infrastructure.execution.unstage(this, this)                                   },function(rv){
       
-/*~*/ console.log("B-- some_thing") /*~*/
+/*~*/ console.log("B-- some_child") /*~*/
       infrastructure.execution.unstage(this, this)                                   } )
    
    
    some_thing._id_ = 'some_thing'
+   some_child._id_ = 'some_child'
    greedy._id_ = 'greedy'
    desirous._id_ = 'desirous'
    
    console.log("=== Let's go! ===")
    new Stage().start()
+   
+   infrastructure.set(some_thing, 1, some_child)
+   infrastructure.charge(some_thing, 1)
    
    infrastructure.execution.stage(undefined, greedy)
    infrastructure.execution.stage(undefined, desirous)
