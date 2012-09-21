@@ -124,7 +124,7 @@
       return this.roots.reduce(function(acc, root){ var $$
          return ($$ = function(acc, it){ acc.push(it)
             return it.metadata.reduce(function(acc, relation){
-               if (relation.responsible) acc.push(relation.target)
+               if (relation.responsible) acc.push(relation.to)
                return acc }, acc) })(acc, root) }, new Array()) }
    
    // Compare with a foreign mask for conflicting responsibility
@@ -158,7 +158,7 @@
        , requestConflicts = function(){
             return Stage.ownershipTable.masks
                .filter(function(mask, j){ return Stage.ownershipTable.blamees[j] !== it.stagee })
-                 .some(function(mask)   { return mask.conflictsWith(it.requestedMask)          }) }
+                 .some(function(mask)   { return it.requestedMask.conflictsWith(mask)          }) }
          
        , canBeStaged = !it.requestedMask
                     ||  alreadyResponsible()
