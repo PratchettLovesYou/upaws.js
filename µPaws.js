@@ -347,4 +347,100 @@
       while ((i = this.indexOf(element)) !== -1)
          delete this[i] }
 
+if (require.main === module)
+~function(){ var testing = new Object, Battery, Check
+ , red    = function($){ return "\033[37;41m"+$+"\033[0m" }
+ , yellow = function($){ return "\033[33m"+$+"\033[0m" }
+ , green  = function($){ return "\033[32m"+$+"\033[0m" }
+   
+   /* Testing-related plumbing
+   // ======================== */                                                                                            /*
+   // The following constructs a stupid little testing ‘framework,’ if one can even glorify it with
+   // that name, that I then use to directly exercise several of the above tools.
+   // Hacky as fuck? Yes.
+   /* Effective? Also yes.                                                       */testing.Battery =
+   Battery = function(battery){
+      this.elements = new Array()
+      if (this.ancestor = Battery.current)
+          this.ancestor.elements.push(this)
+                          Battery.current = this
+                          battery.call()
+                          Battery.current = this.ancestor }
+   Battery.prototype.
+   execute = function(n){ var n = n || 0
+      stats = this.elements.reduce(function(acc, element){
+         return testing.addStats(element.execute(n + 1), acc) }, Check.pristine)
+      testing.log(n, testing.inspectStats(stats) )
+      return stats }
+                                                                                     testing.Check =
+   Check = function(target){ var that = this
+      if ( that.battery = Battery.current )
+           that.battery.elements.push(that)
+           that.target = target || undefined
+           that.expectations = Array.prototype.splice.call(arguments, 1)
+      return function(expectation){
+           that.expectations.push(expectation)
+      if (!that.battery )
+           testing.log(0, testing.inspectStats(that.execute(expectation)))
+         return arguments.callee } }
+   
+   Check.pristine = [0,0,0]
+   Check.pending = 'pending'
+   
+   Check.prototype.
+   execute = function(n, expectation){ var
+      target = this.target && this.target.call instanceof Function && this.target.length === 0 ?
+                  this.target.call() : this.target
+      return (expectation? [expectation] : this.expectations).reduce(function(acc, expectation){ var
+         result = expectation.call(target, target)
+         testing.log(n, (result? green : red)(' '+expectation.toString().replace('function ','      ->')) )
+         return testing.addStats(
+            result === Check.pending? [0,1,0]
+          : result?                   [1,0,0]
+          :                           [0,0,1]
+          , acc) }, Check.pristine) }
+   
+   testing.log = function(n, string, max){ max = max || 100; console.log(
+      // This monstrosity splits a string into lines, and further splits any lines over `max`
+      // characters (ignoring ANSI SGR escapes specifically) into multiple lines; then indents.
+      string.split(new RegExp(
+         '((?:(?:\033\\[[\\d;]+m)?[^\\n]){0,'+((max-2*n)-1)+'}(?=\\n|$)|(?:(?:\033\\[[\\d;]+m)?[^\\n]){'+(max-3*n)+'})' ))
+      .filter(function(_, i){ return i % 2 }) .join("\n")
+      .replace(/(^|\n)/g, '$1'+new Array(n+1).join('   ')) )}
+   testing.inspectStats = function(s,p,f){ if (s instanceof Array) { f=s[2]; p=s[1]; s=s[0] }
+      return (f? red : p? yellow : green)( (s+p) +' of '+ (s+p+f) )
+           + (p? ' '+ yellow('('+ p + ' pending)') : '') }
+   testing.addStats = function(a, b){ return [a[0]+b[0], a[1]+b[1], a[2]+b[2]] }
+   
+new Battery(function(){
+
+/* Parsing tests
+// ============= */
+new Battery(function(){
+
+var expr1 = new Expression, expr2 = new Expression, expr3 = new Expression
+new Check()
+(function(){        expr1  .append(expr2)
+             return expr1.next === expr2 })
+(function(){        expr1  .append(expr3)
+             return expr1.next === expr2 })
+(function(){ return expr1.next === expr2 })
+
+new Check(cPaws.parse(''))
+(function(node){ return node instanceof Thing })
+
+new Check(cPaws.parse('label'))
+(function(node){ return node.next .contents instanceof Label })
+
+})
+
+new Battery(function(){
+   new Check('abc')
+      (function(it){ return it === 'abc' })
+      (function(it){ return it !== 'def' })
+      (function(it){ return it === 'fail!' })
+})
+   
+}).execute() }()
+
 if(module)module.exports=paws})()
