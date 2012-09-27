@@ -348,7 +348,7 @@
          delete this[i] }
 
 if (require.main === module)
-~function(){ var testing = new Object, Battery, Check
+~function(){ var testing = new Object, Battery, Check, pending
  , red    = function($){ return "\033[37;41m"+$+"\033[0m" }
  , yellow = function($){ return "\033[33m"+$+"\033[0m" }
  , green  = function($){ return "\033[32m"+$+"\033[0m" }
@@ -384,7 +384,7 @@ if (require.main === module)
            testing.log(0, testing.inspectStats(that.execute(expectation)))
          return arguments.callee } }
    
-   Check.pristine = [0,0,0]
+   Check.pristine = [0,0,0]                                                               ;pending =
    Check.pending = 'pending'
    
    Check.prototype.
@@ -393,7 +393,8 @@ if (require.main === module)
                   this.target.call() : this.target
       return (expectation? [expectation] : this.expectations).reduce(function(acc, expectation){ var
          result = expectation.call(target, target)
-         testing.log(n, (result? green : red)(' '+expectation.toString().replace('function ','      ->')) )
+         testing.log(n, (result === Check.pending? yellow : result? green : red)
+                           (' '+expectation.toString().replace('function ','      ->')) )
          return testing.addStats(
             result === Check.pending? [0,1,0]
           : result?                   [1,0,0]
@@ -439,6 +440,7 @@ new Battery(function(){
       (function(it){ return it === 'abc' })
       (function(it){ return it !== 'def' })
       (function(it){ return it === 'fail!' })
+      (function(it){ return pending; make_awesome(it) })
 })
    
 }).execute() }()
