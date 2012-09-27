@@ -435,7 +435,13 @@ new Check(  cPaws.parse(some_string) .next  )
 (function(label_node){ return label_node.contents instanceof Label })
 (function(label_node){ return label_node.contents.string === some_string })
 
-new Check(  cPaws.parse('(' + some_string + ')')  )
+new Check(  cPaws.parse(some_string +' '+ some_string)  )
+(function(root){ return root.next     .contents instanceof Label })
+(function(root){ return root.next     .contents.string === some_string })
+(function(root){ return root.next.next.contents instanceof Label })
+(function(root){ return root.next.next.contents.string === some_string })
+
+new Check(  cPaws.parse('('+ some_string +')')  )
 (function(locals){ return typeof locals.contents === 'undefined' })
 (function(node)  { return node.next instanceof Expression })
 (function(node)  {           var inner_locals = node.next.contents
