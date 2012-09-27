@@ -427,11 +427,38 @@ new Check()
              return expr1.next === expr2 })
 (function(){ return expr1.next === expr2 })
 
-new Check(cPaws.parse(''))
-(function(node){ return node instanceof Thing })
+new Check(  cPaws.parse('')  )
+(function(locals){ return typeof locals.contents === 'undefined' })
 
-new Check(cPaws.parse('label'))
-(function(node){ return node.next .contents instanceof Label })
+var some_string = 'µPaws'
+new Check(  cPaws.parse(some_string) .next  )
+(function(label_node){ return label_node.contents instanceof Label })
+(function(label_node){ return label_node.contents.string === some_string })
+
+new Check(  cPaws.parse('(' + some_string + ')')  )
+(function(locals){ return typeof locals.contents === 'undefined' })
+(function(node)  { return node.next instanceof Expression })
+(function(node)  {           var inner_locals = node.next.contents
+                   return typeof inner_locals.contents === 'undefined' })
+(function(node)  {           var inner_locals = node.next.contents
+                               , inner_label  = inner_locals.next
+                          return inner_label.contents instanceof Label })
+
+new Check(  cPaws.parse('{}') .next  )
+(function(scope){ return scope.contents instanceof Execution })
+
+var scope = cPaws.parse('{' + some_string + '}')
+new Check(  scope .next .contents  )
+(function(execution){ return !execution.complete() })
+
+
+var execution = scope.next.contents
+new Check(  execution .position  )
+(function(locals){ return typeof locals.contents === 'undefined' })
+
+new Check(  execution .position .next  )
+(function(label_node){ return label_node.contents instanceof Label })
+(function(label_node){ return label_node.contents.string === some_string })
 
 })
 
