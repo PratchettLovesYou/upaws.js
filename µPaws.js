@@ -468,14 +468,6 @@ new Check(  execution .position .next  )
 
 })
 
-new Battery(function(){
-   new Check('abc')
-      (function(it){ return it === 'abc' })
-      (function(it){ return it !== 'def' })
-      (function(it){ return it === 'fail!' })
-      (function(it){ return pending; make_awesome(it) })
-})
-   
 }).execute() }()
 
 if(module)module.exports=paws})()
