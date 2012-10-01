@@ -40,7 +40,8 @@
    Execution.prototype.
    advance = function(rv) { var juxt, s
       if (this.complete()) return
-      if (this.alien)      return this.subs.splice(0, 1)[0]
+      if (this.alien)    { this.pristine = false
+                           return this.subs.splice(0, 1)[0] }
       
       if (!this.pristine) {
          if (typeof this.position === 'undefined') { 
@@ -465,6 +466,88 @@ new Check(  execution .position  )
 new Check(  execution .position .next  )
 (function(label_node){ return label_node.contents instanceof Label })
 (function(label_node){ return label_node.contents.string === some_string })
+
+})
+/* Advancement tests
+// ================= */
+new Battery(function(){
+
+var func1 = new Function(), func2 = new Function()
+new Check(  new Execution(func1, func2)  )
+(function(alien){ return  alien.pristine && !alien.complete() })
+(function(alien){ return  alien.subs.length === 2 })
+
+(function(alien){ return  alien.advance() === func1 })
+(function(alien){ return !alien.pristine })
+(function(alien){ return  alien.subs.length === 1 })
+
+(function(alien){ return  alien.advance() === func2 })
+(function(alien){ return  alien.complete() })
+
+new Check(  new Execution(cPaws.parse(''))  )
+(function(native){ return 'pending'; return  native.pristine })
+(function(native){ return 'pending'; return  native.complete() })
+(function(native){ return 'pending'; return typeof native.advance() === 'undefined' })
+
+var some_string = 'µPaws'
+~function(){
+var  a_native = new Execution(cPaws.parse(some_string))
+,      locals = a_native.position
+,  some_label = locals.next.contents
+
+new Check(  a_native  )
+(function(native){ return  native.pristine
+                       && !native.complete() })
+(function(native){ var juxt = native.advance()
+         return typeof juxt.left === 'undefined'
+                    && juxt.right === some_label })
+(function(native){ return !native.pristine
+                       &&  native.complete() })
+(function(native){ return typeof native.advance() === 'undefined' })
+}()
+
+~function(){
+var      a_native = new Execution(cPaws.parse(some_string +' '+ some_string))
+,          locals = a_native.position
+,     first_label = locals.next.contents
+,    second_label = locals.next.next.contents
+, arbitrary_thing = new Thing()
+
+new Check(  a_native  )
+(function(native){ return  native.pristine
+                       && !native.complete() })
+(function(native){ var juxt = native.advance()
+         return typeof juxt.left === 'undefined'
+                    && juxt.right === first_label })
+(function(native){ return !native.pristine })
+(function(native){ var juxt = native.advance(arbitrary_thing)
+                return juxt.left === arbitrary_thing
+                    && juxt.right === second_label })
+(function(native){ return  native.complete() })
+(function(native){ return typeof native.advance() === 'undefined' })
+}()
+
+~function(){
+var      a_native = new Execution(cPaws.parse('('+ some_string +')'))
+,          locals = a_native.position
+,    inner_locals =       locals.next.contents
+,      some_label = inner_locals.next.contents
+, arbitrary_thing = new Thing()
+
+new Check(  a_native  )
+(function(native){ return  native.pristine
+                       && !native.complete() })
+(function(native){ var juxt = native.advance()
+         return typeof juxt.left === 'undefined'
+                    && juxt.right === some_label })
+(function(native){ return !native.pristine })
+(function(native){ var juxt = native.advance(arbitrary_thing)
+         return typeof juxt.left === 'undefined'
+                    && juxt.right === arbitrary_thing })
+(function(native){ return  native.complete() })
+(function(native){ return typeof native.advance() === 'undefined' })
+}()
+
 
 })
 
