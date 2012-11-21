@@ -6,9 +6,9 @@ Object.keys(paws)
    .forEach(function(key){
       global[key] = paws[key] })
 
-~function(){ var
+~function(){ var u
    
-   red   = function($){ return "\033[37;41m"+$+"\033[0m" }
+ , red   = function($){ return "\033[37;41m"+$+"\033[0m" }
  , green = function($){ return "\033[37;42m"+$+"\033[0m" }
    
    // The following is something like:
@@ -39,28 +39,28 @@ Object.keys(paws)
    
  , greedy = new Execution(                                                             function(rv){
 /*~*/ console.log("A.. some_thing") /*~*/
-      infrastructure.execution .charge(this, this, some_thing)
-      infrastructure.execution.unstage(this, this)                                   },function(rv){
+      infrastructure.execution .charge(this,this, some_thing)
+      infrastructure.execution.unstage(this,this)                                    },function(rv){
 /*~*/ console.log("A++ some_thing") /*~*/
       setTimeout(
          infrastructure.execution.stage
-                               , 2500, this, this)
-      infrastructure.execution.unstage(this, this)                                   },function(rv){
+                               , 2500, this,this)
+      infrastructure.execution.unstage(this,this)                                    },function(rv){
 /*~*/ console.log("A-- some_thing") /*~*/
-      infrastructure.execution.unstage(this, this)                                   } )
+      infrastructure.execution.unstage(this,this)                                    } )
    
  , desirous = new Execution(                                                           function(rv){
 /*~*/ console.log("B.. some_child") /*~*/
-      infrastructure.execution .charge(this, this, some_child)
-      infrastructure.execution.unstage(this, this)                                   },function(rv){
+      infrastructure.execution .charge(this,this, some_child)
+      infrastructure.execution.unstage(this,this)                                    },function(rv){
 /*~*/ console.log("B++ some_child") /*~*/
       setTimeout(
          infrastructure.execution.stage
-                               , 1500, this, this)
-      infrastructure.execution.unstage(this, this)                                   },function(rv){
+                               , 1500, this,this)
+      infrastructure.execution.unstage(this,this)                                    },function(rv){
       
 /*~*/ console.log("B-- some_child") /*~*/
-      infrastructure.execution.unstage(this, this)                                   } )
+      infrastructure.execution.unstage(this,this)                                    } )
    
    
    some_thing._id_ = 'some_thing'
@@ -74,7 +74,7 @@ Object.keys(paws)
    infrastructure.set(some_thing, 1, some_child)
    infrastructure.charge(some_thing, 1)
    
-   infrastructure.execution.stage(undefined, greedy)
-   infrastructure.execution.stage(undefined, desirous)
+   infrastructure.execution.stage(u,greedy)
+   infrastructure.execution.stage(u,desirous)
    
 }()
