@@ -259,13 +259,13 @@
            this.intervalID = clearInterval(this.intervalID) }
    
    /* Alien families
-   // ============== */ var infrastructure, neener_neener = {}, parseNum      ;paws.infrastructure =
+   // ============== */ var ǁ, infrastructure, neener_neener = {}, parseNum   ;paws.infrastructure =
    // FIXME: Much of the code here is a lie. This is a direct, on-the-stack JavaScript
    //        implementation, which Will Not Work™. Many of these aliens need do MSR or mutation, and
    //        thus need to charge and discharge things *themselves*, which means they (these aliens)
    //        need to propagate through the staging queue and whatnot. This is going to be complex ...
    // Then again, this is a non-concurrent implementation. Maybe that's fine? (Nope. Chuck Testa.)
-   infrastructure = {
+   infrastructure = ǁ = {
            get: function(thing, number){ return thing.metadata[parseNum(number)].to }
     ,      set: function(thing, number, e){     thing.metadata[parseNum(number)] = new Relation(e) }
     ,    affix: function(thing, e){             thing.metadata.push(new Relation(e)) }
@@ -320,13 +320,8 @@
                Stage.ownershipTable.add(new Mask(execution, [thing])) }}
          
       }
-   }
-   
-   r  = function(_){ _.stagee(/* FIXME: What do we “stage” this with? Why even return at all? */) }
-   rv = function(_, rv){
-      if (_) _.stage(rv)
-      return rv }
-   
+   }                                                                                                        /*|*/;paws.utilities = new Object()
+                                                                           paws.utilities.parseNum =
    parseNum = function(number){
       if (number instanceof Label)     number = parseInt(number.string, 10)
       if (typeof number !== 'number'
