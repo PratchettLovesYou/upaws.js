@@ -1,6 +1,6 @@
 #!/usr/bin/env node
-                                                                                                            //|   Code over here, beyond column 111, is not intended for the consumption of casual readers.
-(function(){ var Thing, Relation, Empty, Label, Execution, Native, Self, Expression, cPaws
+                                                                                                                  //|   Code over here, beyond column 117, is not intended for the consumption of casual readers.
+(function(){ var Thing, Relation, Empty, Label, Execution, Native, Self, Expression, cPaws                        /*|*/,undefined, u
  , fs   = require('fs')
  , path = require('path')
  , util = require('util')
@@ -9,9 +9,9 @@
    
                                                                                         paws.Thing =
    Thing = function(){
-      this.receiver = /* super */                                                                           /*|*/ undefined
+      this.receiver = /* super */                                                                                 /*|*/ undefined
       this.metadata = [/* Relation */] }
-   Thing.prototype.receiver = /* defined below */                                                           /*|*/ undefined
+   Thing.prototype.receiver = /* defined below */                                                                 /*|*/ undefined
                                                                                      paws.Relation =
    Relation = function(to, responsible){
       this.to = to || undefined
@@ -30,7 +30,7 @@
          this.stack = [] }
       
       this.locals = null }
-   Execution.prototype.receiver = /* defined below */                                                       /*|*/ undefined
+   Execution.prototype.receiver = /* defined below */                                                             /*|*/ undefined
    
    Execution.prototype.
    complete = function(){
@@ -85,7 +85,7 @@
    append = function(next){ var pos = this
       while (pos.next) pos = pos.next
       pos.next = next }
-                                                                                                            /*|*/ paws.cPaws = cPaws = new Object()
+                                                                                                                  /*|*/ paws.cPaws = cPaws = new Object()
    cPaws.labelCharacters = /[^(){} ]/ // Not currently supporting quote-delimited labels
    
    cPaws.
@@ -179,7 +179,7 @@
    Stage.ownershipTable.
    add = function(requestedMask){
       this.blamees.push(Stage.current.occupant)
-      this.masks.push(requestedMask) }                                                                      /*|*/ ;Stage.ownershipTable.
+      this.masks.push(requestedMask) }                                                                            /*|*/ ;Stage.ownershipTable.
    invalidate = function(execution){ var that = this
       that.blamees.forEach(function(blamee, i){
          if (blamee === execution) {
@@ -253,7 +253,7 @@
    Stage.prototype.
    start = function(){
       if (!this.intervalID)
-           this.intervalID = setInterval(this.realize, 50, this) }                                          /*|*/;Stage.prototype.
+           this.intervalID = setInterval(this.realize, 50, this) }                                                /*|*/;Stage.prototype.
    stop  = function(){
       if ( this.intervalID)
            this.intervalID = clearInterval(this.intervalID) }
@@ -320,7 +320,7 @@
                Stage.ownershipTable.add(new Mask(execution, [thing])) }}
          
       }
-   }                                                                                                        /*|*/;paws.utilities = new Object()
+   }                                                                                                              /*|*/;paws.utilities = new Object()
                                                                            paws.utilities.parseNum =
    parseNum = function(number){
       if (number instanceof Label)     number = parseInt(number.string, 10)
@@ -343,6 +343,7 @@
       while ((i = this.indexOf(element)) !== -1)
          delete this[i] }
 
+// =  - -===-=-== == =-=-= --=- =- =--   =-- =-====-  -==--= =- -   -=-== = --  - =---=-==  -= -==-
 if (require.main === module)
 ~function(){ var testing = new Object, Battery, Check, pending
  , red    = function($){ return "\033[37;41m"+$+"\033[0m" }
@@ -350,7 +351,7 @@ if (require.main === module)
  , green  = function($){ return "\033[32m"+$+"\033[0m" }
    
    /* Testing-related plumbing
-   // ======================== */                                                                                            /*
+   // ======================== */
    // The following constructs a stupid little testing ‘framework,’ if one can even glorify it with
    // that name, that I then use to directly exercise several of the above tools.
    // Hacky as fuck? Yes.
