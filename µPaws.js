@@ -450,9 +450,8 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
    ~function __identifier__(o, seen){ if (seen.indexOf(o) >= 0) return; seen.push(o)
       Object.getOwnPropertyNames(o).forEach(function(key){
          try { __identifier__(o[key], seen) } catch(_){}
-         try { if (typeof o[key] == 'function' || o.__proto__ === Object.prototype) {
-            console.log(key, o[key].toString())
-            o[key].__identifier__ = key } } catch(_){} })
+         try { if (typeof o[key] == 'function' || o.__proto__ === Object.prototype)
+            o[key].__identifier__ = key } catch(_){} })
       }(paws, [])
    
 
@@ -485,9 +484,11 @@ if (require.main === module)
            that.target = target || undefined
            that.expectations = Array.prototype.splice.call(arguments, 1)
       return function(expectation){
-           that.expectations.push(expectation)
-      if (!that.battery )
-           testing.log(0, testing.inspectStats(that.execute(expectation)))
+         if (typeof expectation === 'string') expectation =
+            eval('(function(it){ return '+expectation+' })')
+         that.expectations.push(expectation)
+         if (!that.battery )
+            testing.log(0, testing.inspectStats(that.execute(expectation)))
          return arguments.callee } }
    
    Check.pristine = [0,0,0]                                                               ;pending =
