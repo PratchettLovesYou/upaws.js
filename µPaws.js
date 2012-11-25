@@ -373,7 +373,7 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
     , caller = arguments.callee.caller
       
       if (caller.caller !== arguments.callee && it.constructor !== caller) {
-        (F = new Function).prototype = caller
+        (F = new Function).prototype = caller.prototype
          it = new F }
       if (caller.parent) {
           caller.parent.apply(it, passed) }
@@ -457,20 +457,20 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
 
 /* =  - -===-=-== == =-=-= --=- =- =--   =-- =-====-  -==--= =- -   -=-== = --  - =---=-==  -= -= */
 if (require.main === module)
-~function(){ var testing = new Object, Battery, Check, pending
+~function(){ var testing = new Object, Battery, $,Check, pending
    /* Testing-related plumbing
    // ======================== */
    // The following constructs a stupid little testing ‘framework,’ if one can even glorify it with
    // that name, that I then use to directly exercise several of the above tools.
    // Hacky as fuck? Yes.
    /* Effective? Also yes.                                                       */testing.Battery =
-   Battery = function(battery){
-      this.elements = new Array()
-      if (this.ancestor = Battery.current)
-          this.ancestor.elements.push(this)
-                          Battery.current = this
+   Battery = function(battery){ var it = construct(this)
+          it.elements = new Array()
+      if (it.ancestor = Battery.current)
+          it.ancestor.elements.push(it)
+                          Battery.current = it
                           battery.call()
-                          Battery.current = this.ancestor }
+                          Battery.current = it.ancestor }
    Battery.prototype.
    execute = function(n){ var n = n || 0
       stats = this.elements.reduce(function(acc, element){
@@ -478,17 +478,17 @@ if (require.main === module)
       testing.log(n, testing.inspectStats(stats) )
       return stats }
                                                                                      testing.Check =
-   Check = function(target){ var that = this
-      if ( that.battery = Battery.current )
-           that.battery.elements.push(that)
-           that.target = target || undefined
-           that.expectations = Array.prototype.splice.call(arguments, 1)
-      return function(expectation){
+   Check = $ = function(target){ ;debugger;var it = construct(this)
+      if ( it.battery = Battery.current )
+           it.battery.elements.push(it)
+           it.target = target || undefined
+           it.expectations = Array.prototype.splice.call(arguments, 1)
+      return function(expectation, rest){
          if (typeof expectation === 'string') expectation =
-            eval('(function(it){ return '+expectation+' })')
-         that.expectations.push(expectation)
-         if (!that.battery )
-            testing.log(0, testing.inspectStats(that.execute(expectation)))
+            eval('(function('+expectation+'){ return '+expectation+rest+' })')
+         it.expectations.push(expectation)
+         if (!it.battery)
+            testing.log(0, testing.inspectStats(it.execute(expectation)))
          return arguments.callee } }
    
    Check.pristine = [0,0,0]                                                               ;pending =
