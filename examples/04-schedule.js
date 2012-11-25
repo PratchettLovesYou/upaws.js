@@ -34,8 +34,8 @@ Object.keys(paws)
    //    stage (foo)
    //    stage (bar)
    //    
- , some_thing = new Empty()
- , some_child = new Empty()
+ , some_thing = new Thing()
+ , some_child = new Thing()
    
  , greedy = new Execution(                                                             function(rv){
 /*~*/ console.log("A.. some_thing") /*~*/
