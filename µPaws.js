@@ -1,6 +1,6 @@
 #!/usr/bin/env node
                                                                                                                   //|   Code over here, beyond column 117, is not intended for the consumption of casual readers.
-(function(){ var Thing, Relation, Empty, Label, Execution, Native, Self, Expression, cPaws                        /*|*/,undefined, u
+(function(){ var Thing, R,Relation, Label, Execution, Native, Self, Expression, cPaws                             /*|*/,undefined, u
  , fs   = require('fs')
  , path = require('path')
  , util = require('util')
@@ -16,8 +16,7 @@
    Relation = function(to, responsible){
       this.to = to || undefined
       this.responsible = responsible || undefined }
-                                                                                        paws.Empty =
-   Empty = function(){              Thing.call(this) }                                 ;paws.Label =
+                                                                                        paws.Label =
    Label = function(string){        Thing.call(this)
       this.string = string || undefined }                                          ;paws.Execution =
    Execution = function(something){ Thing.call(this)
@@ -275,7 +274,7 @@
     ,   remove: function(thing, number){ return thing.metadata.splice(parseNum(number), 1)[0].to }
       
     , clone: function(thing){ var metadata = thing.metadata
-         thing = new Empty()
+         thing = new Thing()
          thing.metadata = metadata.map(function(relation){
             return new Relation(relation.to, relation.responsible) })
          return thing }
