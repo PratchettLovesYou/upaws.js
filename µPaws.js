@@ -3,7 +3,7 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
   , /* Parsing: */         cPaws, Expression                                                                      /*|*/;var undefined, u
   , /* Staging queue: */   Mask, Stage, Staging, metadataReceiver, executionReceiver
   , /* Aliens: */          ǁ,infrastructure, parseNum
-  , /* Plumbing: */        deriveFrom, construct
+  , /* Plumbing: */        inherits, construct
    
   , fs   = require('fs')
   , path = require('path')
@@ -22,11 +22,11 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
       it.to = to || undefined
       it.responsible = responsible || undefined }
                                                                                         paws.Label =
-   Label = function(string, MD){ it = construct(this, Thing, [MD])
+   Label = function(string, MD){ it = construct(this, [MD])
       it.string = string || undefined }
-   Label.prototype = deriveFrom(Thing)
+   inherits(Thing, Label)
                                                                                    ;paws.Execution =
-   Execution = function(something, MD){ var it = construct(this, Thing, [MD])
+   Execution = function(something, MD){ var it = construct(this)
          it.pristine = true
       if (typeof something === 'function') {
          it.alien = true
@@ -36,7 +36,7 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
          it.stack = [] }
       
       it.locals = null }
-   Execution.prototype = deriveFrom(Thing)
+   inherits(Thing, Execution)
    Execution.prototype.receiver = /* defined below */                                                             /*|*/ undefined
    
    Execution.prototype.
@@ -350,19 +350,21 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
       while ((i = this.indexOf(element)) !== -1)
          delete this[i] }
    
-   deriveFrom = function(constructor){ var
+   inherits = function(parent, constructor){ var
       F = new Function
-      F.prototype = constructor.prototype
-      return new F }
+      F.prototype = parent.prototype
+      constructor.prototype = new F
+      constructor.prototype.constructor = constructor
+      constructor.parent = parent }
    
-   construct = function(it, ancestor, passed){ var F
+   construct = function(it, passed){ var F
     , caller = arguments.callee.caller
       
-      if (it.constructor !== caller) {
+      if (caller.caller !== arguments.callee && it.constructor !== caller) {
         (F = new Function).prototype = caller
          it = new F }
-      if (ancestor)
-          ancestor.apply(it, passed)
+      if (caller.parent) {
+          caller.parent.apply(it, passed) }
       return it }
    
 
