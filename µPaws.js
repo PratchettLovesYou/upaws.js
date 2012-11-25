@@ -8,27 +8,31 @@
  , paws = new Object()
    
                                                                                         paws.Thing =
-   Thing = function(){
-      this.receiver = /* super */                                                                                 /*|*/ undefined
-      this.metadata = [/* Relation */] }
+   Thing = function(metadata){ var it = construct(this)
+      it.receiver = /* super */                                                                                   /*|*/ undefined
+      it.metadata = (metadata || [/* Relation */]).map(function(thing){
+         return thing instanceof Relation? thing : new Relation(thing) }) }
    Thing.prototype.receiver = /* defined below */                                                                 /*|*/ undefined
                                                                                      paws.Relation =
-   Relation = function(to, responsible){
-      this.to = to || undefined
-      this.responsible = responsible || undefined }
+   R=Relation = function(to, responsible){ var it = construct(this)
+      it.to = to || undefined
+      it.responsible = responsible || undefined }
                                                                                         paws.Label =
-   Label = function(string){        Thing.call(this)
-      this.string = string || undefined }                                          ;paws.Execution =
-   Execution = function(something){ Thing.call(this)
-         this.pristine = true
+   Label = function(string, MD){ it = construct(this, Thing, [MD])
+      it.string = string || undefined }
+   Label.prototype = deriveFrom(Thing)
+                                                                                   ;paws.Execution =
+   Execution = function(something, MD){ var it = construct(this, Thing, [MD])
+         it.pristine = true
       if (typeof something === 'function') {
-         this.alien = true
-         this.subs = Array.prototype.slice.call(arguments) }
+         it.alien = true
+         it.subs = Array.prototype.slice.call(arguments) }
       else {
-         this.position = something || undefined
-         this.stack = [] }
+         it.position = something || undefined
+         it.stack = [] }
       
-      this.locals = null }
+      it.locals = null }
+   Execution.prototype = deriveFrom(Thing)
    Execution.prototype.receiver = /* defined below */                                                             /*|*/ undefined
    
    Execution.prototype.
@@ -76,9 +80,9 @@
    
    /* Parsing
    // ======= */                                                                   paws.Expression =
-   Expression = function(contents, next){
-      this.contents = contents || undefined
-      this.next = next || undefined }
+   Expression = function(contents, next){ var it = construct(this)
+      it.contents = contents || undefined
+      it.next = next || undefined }
    
    Expression.prototype.
    append = function(next){ var pos = this
@@ -115,9 +119,9 @@
    
    /* Interpretation
    // ============== */ var Mask, Stage, Staging, metadataReceiver, executionReceiver   ;paws.Mask =
-   Mask = function(owner, roots){
-      this.owner = owner || undefined
-      this.roots = roots || [/* Thing */] }
+   Mask = function(owner, roots){ var it = construct(this)
+      it.owner = owner || undefined
+      it.roots = roots || [/* Thing */] }
    
    // Returns an array of all of the things that this `Mask`’s `roots` are responsible for.
    Mask.prototype.flatten = function(){
@@ -135,9 +139,9 @@
    Mask.prototype.contains = function(far){ if (far === this) return true
       return far.flatten().intersect(this.flatten()).length === 0 }
                                                                                         paws.Stage =
-   Stage = function(){
-      this.occupant = undefined
-      if (!Stage.default) Stage.default = this }
+   Stage = function(){ var it = construct(this)
+      it.occupant = undefined
+      if (!Stage.default) Stage.default = it }
    
    // Non-concurrent implementation! Yay! </sarcasm>
    Stage.current = undefined
@@ -168,10 +172,10 @@
             return Stage.queue.splice(i,1)[0] }}
       
                                                                                       paws.Staging =
-   Staging = function(stagee, resumptionValue, requestedMask){
-      this.stagee = stagee || undefined
-      this.resumptionValue = resumptionValue || undefined
-      this.requestedMask = requestedMask || undefined }
+   Staging = function(stagee, resumptionValue, requestedMask){ var it = construct(this)
+      it.stagee = stagee || undefined
+      it.resumptionValue = resumptionValue || undefined
+      it.requestedMask = requestedMask || undefined }
    
    Stage.ownershipTable = { blamees: [/* execution */]
                           , masks:   [/* Mask */] }
@@ -341,6 +345,22 @@
    Array.prototype.deleteAll = function(element){ var i
       while ((i = this.indexOf(element)) !== -1)
          delete this[i] }
+   
+   deriveFrom = function(constructor){ var
+      F = new Function
+      F.prototype = constructor.prototype
+      return new F }
+   
+   construct = function(it, ancestor, passed){ var F
+    , caller = arguments.callee.caller
+      
+      if (it.constructor !== caller) {
+        (F = new Function).prototype = caller
+         it = new F }
+      if (ancestor)
+          ancestor.apply(it, passed)
+      return it }
+   
 
 // =  - -===-=-== == =-=-= --=- =- =--   =-- =-====-  -==--= =- -   -=-== = --  - =---=-==  -= -==-
 if (require.main === module)
