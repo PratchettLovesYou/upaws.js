@@ -1,12 +1,15 @@
 #!/usr/bin/env node
-                                                                                                                  //|   Code over here, beyond column 117, is not intended for the consumption of casual readers.
-(function(){ var Thing, R,Relation, Label, Execution, Native, Self, Expression, cPaws                             /*|*/,undefined, u
- , fs   = require('fs')
- , path = require('path')
- , util = require('util')
+var /* Types: */           Thing, R,Relation, Label, Execution                                                    //|   // Code over here, beyond column 117, is not intended for the consumption of casual readers.
+  , /* Parsing: */         cPaws, Expression                                                                      /*|*/;var undefined, u
+  , /* Staging queue: */   Mask, Stage, Staging, metadataReceiver, executionReceiver
+  , /* Aliens: */          ǁ,infrastructure, parseNum
+  , /* Plumbing: */        deriveFrom, construct
    
- , paws = new Object()
+  , fs   = require('fs')
+  , path = require('path')
+  , util = require('util')
    
+  , paws = new Object()
                                                                                         paws.Thing =
    Thing = function(metadata){ var it = construct(this)
       it.receiver = /* super */                                                                                   /*|*/ undefined
@@ -118,7 +121,7 @@
    
    
    /* Interpretation
-   // ============== */ var Mask, Stage, Staging, metadataReceiver, executionReceiver   ;paws.Mask =
+   // ============== */                                                                  paws.Mask =
    Mask = function(owner, roots){ var it = construct(this)
       it.owner = owner || undefined
       it.roots = roots || [/* Thing */] }
@@ -262,7 +265,7 @@
            this.intervalID = clearInterval(this.intervalID) }
    
    /* Alien families
-   // ============== */ var ǁ, infrastructure, neener_neener = {}, parseNum   ;paws.infrastructure =
+   // ============== */                                                        paws.infrastructure =
    // FIXME: Much of the code here is a lie. This is a direct, on-the-stack JavaScript
    //        implementation, which Will Not Work™. Many of these aliens need do MSR or mutation, and
    //        thus need to charge and discharge things *themselves*, which means they (these aliens)
@@ -568,4 +571,4 @@ new Check(  a_native  )
 
 }).execute() }()
 
-if(module)module.exports=paws})()
+if(module)module.exports=paws
