@@ -38,28 +38,34 @@ Object.keys(paws)
  , some_child = new Thing()
    
  , greedy = new Execution(                                                             function(rv){
-/*~*/ console.log("A.. some_thing") /*~*/
+      debug.info(debug.ANSI.bold('(greedy)')+' ')
+         ("Charged w/ "+debug.ANSI.brwhite('`some_thing`'))
       infrastructure.execution .charge(this,this, some_thing)
       infrastructure.execution.unstage(this,this)                                    },function(rv){
-/*~*/ console.log("A++ some_thing") /*~*/
+      debug.info(debug.ANSI.bold('(greedy)')+' ')
+         ("Acquired "+debug.ANSI.brwhite('`some_thing`'))
       setTimeout(
          infrastructure.execution.stage
                                , 2500, this,this)
       infrastructure.execution.unstage(this,this)                                    },function(rv){
-/*~*/ console.log("A-- some_thing") /*~*/
+      debug.info(debug.ANSI.bold('(greedy)')+' ')
+         ("Discharged "+debug.ANSI.brwhite('`some_thing`'))
       infrastructure.execution.unstage(this,this)                                    } )
    
  , desirous = new Execution(                                                           function(rv){
-/*~*/ console.log("B.. some_child") /*~*/
+      debug.info(debug.ANSI.bold('(desirous)')+' ')
+         ("Charged w/ "+debug.ANSI.brwhite('`some_child`'))
       infrastructure.execution .charge(this,this, some_child)
       infrastructure.execution.unstage(this,this)                                    },function(rv){
-/*~*/ console.log("B++ some_child") /*~*/
+      debug.info(debug.ANSI.bold('(desirous)')+' ')
+         ("Acquired "+debug.ANSI.brwhite('`some_child`'))
       setTimeout(
          infrastructure.execution.stage
                                , 1500, this,this)
       infrastructure.execution.unstage(this,this)                                    },function(rv){
       
-/*~*/ console.log("B-- some_child") /*~*/
+      debug.info(debug.ANSI.bold('(desirous)')+' ')
+         ("Discharged "+debug.ANSI.brwhite('`some_child`'))
       infrastructure.execution.unstage(this,this)                                    } )
    
    

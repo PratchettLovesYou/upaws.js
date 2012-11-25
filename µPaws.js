@@ -3,7 +3,12 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
   , /* Parsing: */         cPaws, Expression                                                                      /*|*/;var undefined, u
   , /* Staging queue: */   Mask, Stage, Staging, metadataReceiver, executionReceiver
   , /* Aliens: */          ǁ,infrastructure, parseNum
-  , /* Plumbing: */        inherits, construct
+  , /* Plumbing: */        inherits, construct, getter, noop
+  , /* Debugging: */       P,I, D,debug, log, ANSI
+   
+  , USE_COLOR      = process.env['USE_COLOR'] === 'false' || true
+  , DEBUG = parseInt(process.env['DEBUG'])
+  , DEBUG = DEBUG === 0? 0:(DEBUG || 6)
    
   , fs   = require('fs')
   , path = require('path')
@@ -13,10 +18,24 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
                                                                                                                   /*|*/ (function one($){ $(function two($){
                                                                                         paws.Thing =
    Thing = function(metadata){ var it = construct(this)
+      it._id = Thing.counter++
       it.receiver = /* super */                                                                                   /*|*/ undefined
       it.metadata = (metadata || [/* Relation */]).map(function(thing){
          return thing instanceof Relation? thing : new Relation(thing) }) }
    Thing.prototype.receiver = /* defined below */                                                                 /*|*/ undefined
+   Thing.counter = 1
+   
+   Thing.inspect = function(it, bare) {
+      return ANSI.brblack('❲'+it._id+'❳') + (bare? '':it.toString()) }
+   
+   getter(Thing.prototype, 'named',
+      function(){ return this.hasOwnProperty('name') })
+   Thing.prototype.name = function(name){ this.name = name; return this }
+   Thing.prototype._name = function(name){
+      this        .toString = function(){ return name }; return this }
+   
+   Thing.prototype.toString = function(){ return this.named? this.name:'' }
+   Thing.prototype.inspect = function(){ return Thing.inspect(this, false) } 
                                                                                      paws.Relation =
    R=Relation = function(to, responsible){ var it = construct(this)
       it.to = to || undefined
@@ -25,6 +44,7 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
    Label = function(string, MD){ it = construct(this, [MD])
       it.string = string || undefined }
    inherits(Thing, Label)
+   Label.prototype.toString = function(){ return ANSI.cyan("'"+this.string+"'") }
                                                                                    ;paws.Execution =
    Execution = function(something, MD){ var it = construct(this)
          it.pristine = true
@@ -337,18 +357,10 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
    
    /* Plumbing                                                                                                    /*|*/ }) // two()
    // ======== */
-   // Remove all common elements from a pair of `Array`s.
-   // !! DESTRUCTIVELY MODIFIES ITS ARGUMENTS !!
-   Array.prototype.intersect = function(them){ var that = this
-      this.slice().forEach(function(e){ var kill, iA, iB
-         if (that.indexOf(e) + them.indexOf(e) > -2) {
-            that.deleteAll(e)
-            them.deleteAll(e) } })
-      return this }
-   Array.prototype.union = function(){ /* NYI */ }
-   Array.prototype.deleteAll = function(element){ var i
-      while ((i = this.indexOf(element)) !== -1)
-         delete this[i] }
+   getter = function getter(object, property, getter) {
+      if (!object.hasOwnProperty(property))
+         Object.defineProperty(object, property, { get:getter, enumerable:false }) }
+   noop = function noop(arg){ return arg }
    
    inherits = function(parent, constructor){ var
       F = new Function
@@ -367,14 +379,86 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
           caller.parent.apply(it, passed) }
       return it }
    
+   // Remove all common elements from a pair of `Array`s.
+   // !! DESTRUCTIVELY MODIFIES ITS ARGUMENTS !!
+   Array.prototype.intersect = function(them){ var that = this
+      this.slice().forEach(function(e){ var kill, iA, iB
+         if (that.indexOf(e) + them.indexOf(e) > -2) {
+            that.deleteAll(e)
+            them.deleteAll(e) } })
+      return this }
+   Array.prototype.union = function(){ /* NYI */ }
+   Array.prototype.deleteAll = function(element){ var i
+      while ((i = this.indexOf(element)) !== -1)
+         delete this[i] }
+   
+   /* Debugging
+   // ========= */
+   P = function P(it) {return (log.element||noop).call(log,
+      it instanceof Thing? Thing.prototype.inspect.apply(it)
+    : (it? it.toString() : ANSI.red('null')) )}
+   I = function I(it) { var a, b, tag
+      if (!(it instanceof Thing)) return (it?
+         (it.inspect? it.inspect:it.toString).call(it) : ANSI.red('null') )
+      if (/\n/.test(a = it.inspect()) && log.element) { tag = Thing.inspect(it, true)
+         b = log.element(tag + it.toString()); log.extra(tag, a); return b }
+         else return a }
+                                                                                        paws.debug =
+   debug = function(level, before){ var level = level || 7, before = before || ''
+    , caller = arguments.callee.caller.name || arguments.callee.caller.__identifier__
+    , before = (caller? caller+'(':'')
+         +ANSI.brblack('#'+(new Error).stack.split("\n")[2].split(':')[1])
+         +(caller?')':'')+': '+before
+      return DEBUG >= level? log(before):new Function }
+  ;['emergency', 'alert', 'critical', 'error', 'warning', 'notice', 'info', 'debug', 'verbose', 'wtf']
+      .forEach(function(name, level){ debug[name] = debug[level] = debug.bind(this, level) })
+                                                                                         debug.log =
+   log = function log_start(before){ var indent, elements = new Array
+      if (typeof before === 'number') {indent = before; before = ''}
+                                 else {before = ''+(before||''); indent = ANSI.strip(before).length+1}
+      log.element = function(_){ elements.push([_]); return "\033*"+(elements.length-1) }
+      log.extra   = function(tag, _){ elements[elements.length-1].push([tag, _]); return '' }
+      return function log_end(text){ var
+         output = Array.prototype.slice.call(arguments).join(', ')
+            .replace(/\033\*(\d+)/g, function(_, n, offset, output){ return elements[n].shift() })
+         
+         console.log(ANSI.SGR(40)+before+output+' '+ANSI.SGR(49) )
+         elements.forEach(function(e){e.forEach(function(e){
+            console.log(ANSI.SGR(40)
+            +(e[0]+e[1]).split("\n").map(function(l){
+               return new Array(ANSI.strip(e[0]).length+indent).join(' ')+l+' '
+            }).join("\n").slice(ANSI.strip(e[0]).length)+' '+ANSI.SGR(49)) })})
+         
+         delete log.element; delete log.extra }}
+                                                                                        debug.ANSI =
+   ANSI = new Array
+   ANSI[00] = 'reset';   ANSI[01] = 'bold';      ANSI[04] = 'underline'; ANSI[07] = 'negative'
+   ANSI[30] = 'black';   ANSI[31] = 'red';       ANSI[32] = 'green';     ANSI[33] = 'yellow'
+   ANSI[34] = 'blue';    ANSI[35] = 'magenta';   ANSI[36] = 'cyan';      ANSI[37] = 'white'; ANSI[39] = 'none'
+   ANSI[90] = 'brblack'; ANSI[91] = 'brred';     ANSI[92] = 'brgreen';   ANSI[93] = 'bryellow'
+   ANSI[94] = 'brblue';  ANSI[95] = 'brmagenta'; ANSI[96] = 'brcyan';    ANSI[97] = 'brwhite'; 
+   ANSI.SGR = function SGR(code){return USE_COLOR? "\033["+code+'m' : '' }
+   ANSI.wrap = function wrap_codes(start, end) { return function wrap_text(text){
+      return ANSI.SGR(start)+text+ANSI.SGR(end) } }
+   ANSI.regex = /\x1B\[([0-9]+(;[0-9]+)*)?m/g
+   ANSI.strip = function strip(text){ return text.replace(ANSI.regex,'') }
+   ANSI.forEach(function(name, code){ ANSI[name] = ANSI.wrap(code, 39) })
+   ANSI.reset = ANSI.SGR(00)
+   ANSI.bold = ANSI.wrap(1, 22); ANSI.underline = ANSI.wrap(04, 24); ANSI.underline = ANSI.wrap(07, 07)
+                                                                                                                  /*|*/ }) // one()
+   if (DEBUG >= 7) // This is about as robust as ... something not-very-robust. lolwhatever.
+   ~function __identifier__(o, seen){ if (seen.indexOf(o) >= 0) return; seen.push(o)
+      Object.getOwnPropertyNames(o).forEach(function(key){
+         try { __identifier__(o[key], seen) } catch(_){}
+         try { if (typeof o[key] == 'function' || o.__proto__ === Object.prototype) {
+            console.log(key, o[key].toString())
+            o[key].__identifier__ = key } } catch(_){} })
+      }(paws, [])
+   
 
-/* =  - -===-=-== == =-=-= --=- =- =--   =-- =-====-  -==--= =- -   -=-== = --  - =---=-==  -= -= */              /*|*/ }) // one()
+/* =  - -===-=-== == =-=-= --=- =- =--   =-- =-====-  -==--= =- -   -=-== = --  - =---=-==  -= -= */
 if (require.main === module)
 ~function(){ var testing = new Object, Battery, Check, pending
- , red    = function($){ return "\033[37;41m"+$+"\033[0m" }
- , yellow = function($){ return "\033[33m"+$+"\033[0m" }
- , green  = function($){ return "\033[32m"+$+"\033[0m" }
-   
    /* Testing-related plumbing
    // ======================== */
    // The following constructs a stupid little testing ‘framework,’ if one can even glorify it with
@@ -415,7 +499,7 @@ if (require.main === module)
                   this.target.call() : this.target
       return (expectation? [expectation] : this.expectations).reduce(function(acc, expectation){ var
          result = expectation.call(target, target)
-         testing.log(n, (result === Check.pending? yellow : result? green : red)
+         testing.log(n, ANSI[result === Check.pending? 'yellow' : result? 'green' : 'red']
                            (' '+expectation.toString().replace('function ','      ->')) )
          return testing.addStats(
             result === Check.pending? [0,1,0]
@@ -431,8 +515,8 @@ if (require.main === module)
       .filter(function(_, i){ return i % 2 }) .join("\n")
       .replace(/(^|\n)/g, '$1'+new Array(n+1).join('   ')) )}
    testing.inspectStats = function(s,p,f){ if (s instanceof Array) { f=s[2]; p=s[1]; s=s[0] }
-      return (f? red : p? yellow : green)( (s+p) +' of '+ (s+p+f) )
-           + (p? ' '+ yellow('('+ p + ' pending)') : '') }
+      return ANSI[f? 'red' : p? 'yellow' : 'green']( (s+p) +' of '+ (s+p+f) )
+           + (p? ' '+ ANSI.yellow('('+ p + ' pending)') : '') }
    testing.addStats = function(a, b){ return [a[0]+b[0], a[1]+b[1], a[2]+b[2]] }
    
 new Battery(function(){
