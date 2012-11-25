@@ -9,7 +9,8 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
   , path = require('path')
   , util = require('util')
    
-  , paws = new Object()
+  , paws = new Object()                                                                                           /*|*/;~function $(l,n){ l(function(i){n=i}); if(n)$(n) }
+                                                                                                                  /*|*/ (function one($){ $(function two($){
                                                                                         paws.Thing =
    Thing = function(metadata){ var it = construct(this)
       it.receiver = /* super */                                                                                   /*|*/ undefined
@@ -334,7 +335,7 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
       || isNaN(number))                number = 0
       return number }
    
-   /* Plumbing
+   /* Plumbing                                                                                                    /*|*/ }) // two()
    // ======== */
    // Remove all common elements from a pair of `Array`s.
    // !! DESTRUCTIVELY MODIFIES ITS ARGUMENTS !!
@@ -365,7 +366,7 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
       return it }
    
 
-// =  - -===-=-== == =-=-= --=- =- =--   =-- =-====-  -==--= =- -   -=-== = --  - =---=-==  -= -==-
+/* =  - -===-=-== == =-=-= --=- =- =--   =-- =-====-  -==--= =- -   -=-== = --  - =---=-==  -= -= */              /*|*/ }) // one()
 if (require.main === module)
 ~function(){ var testing = new Object, Battery, Check, pending
  , red    = function($){ return "\033[37;41m"+$+"\033[0m" }
