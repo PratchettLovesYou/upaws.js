@@ -491,28 +491,33 @@ if (require.main === module)
       testing.log(n, testing.inspectStats(stats) )
       return stats }
                                                                                      testing.Check =
-   Check = $ = function(target){ ;debugger;var it = construct(this)
+   Check = $ = function(target){ var rv, it = construct(this)
       if ( it.battery = Battery.current )
            it.battery.elements.push(it)
            it.target = target || undefined
            it.expectations = Array.prototype.splice.call(arguments, 1)
-      return function(expectation, rest){
-         if (typeof expectation === 'string') expectation =
-            eval('(function('+expectation+'){ return '+expectation+rest+' })')
+      rv = function(expectation, rest){
+         if (typeof expectation !== 'function') expectation = rest.toFunction(expectation)
          it.expectations.push(expectation)
          if (!it.battery)
             testing.log(0, testing.inspectStats(it.execute(expectation)))
-         return arguments.callee } }
+         return arguments.callee }
+      Object.getOwnPropertyNames(Check.prototype).forEach(function(key){
+         rv[key] = Check.prototype[key].bind(it) }); return rv }
+   
+   Check.prototype.drill = function(to){
+      if (typeof to !== 'function') to = to.toFunction()
+      return new Check(to.bind(null, this.target)) }
    
    Check.pristine = [0,0,0]                                                               ;pending =
    Check.pending = 'pending'
    
    Check.prototype.
-   execute = function(n, expectation){ var
-      target = this.target && this.target.call instanceof Function && this.target.length === 0 ?
-                  this.target.call() : this.target
-      return (expectation? [expectation] : this.expectations).reduce(function(acc, expectation){ var
-         result = expectation.call(target, target)
+   execute = function(n, expectation){ var it = this
+      if (it.target && it.target.call instanceof Function && it.target.length === 0)
+          it.target = it.target.call()
+      return (expectation? [expectation] : it.expectations).reduce(function(acc, expectation){ var
+         result = expectation.call(it.target, it.target)
          testing.log(n, ANSI[result === Check.pending? 'yellow' : result? 'green' : 'red']
                            (' '+expectation.toString().replace('function ','      ->')) )
          return testing.addStats(
@@ -520,6 +525,10 @@ if (require.main === module)
           : result?                   [1,0,0]
           :                           [0,0,1]
           , acc) }, Check.pristine) }
+   
+   String.prototype.toFunction = function(){
+      arguments = [].slice.apply(arguments.length? arguments:['it'])
+      return global.eval('(function('+arguments.join(', ')+'){ return '+arguments[0]+this+' })') }
    
    testing.log = function(n, string, max){ max = max || 100; console.log(
       // This monstrosity splits a string into lines, and further splits any lines over `max`
@@ -604,9 +613,9 @@ new Check(  new Execution(func1, func2)  )
 (function(alien){ return  alien.complete() })
 
 new Check(  new Execution(cPaws.parse(''))  )
-(function(native){ return 'pending'; return  native.pristine })
-(function(native){ return 'pending'; return  native.complete() })
-(function(native){ return 'pending'; return typeof native.advance() === 'undefined' })
+(function(native){ return pending; return  native.pristine })
+(function(native){ return pending; return  native.complete() })
+(function(native){ return pending; return typeof native.advance() === 'undefined' })
 
 var some_string = 'µPaws'
 ~function(){
