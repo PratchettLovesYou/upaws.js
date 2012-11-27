@@ -20,7 +20,9 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
    Thing = function(/* metadata... */){ var it = construct(this)
       it._id = Thing.counter++
       it.metadata = new Array
-      it.affix.apply(it, arguments) }
+      it.affix.apply(it, arguments)
+      if (arguments.callee.caller !== arguments.callee)
+         it.metadata.unshift(new R(new Thing, true)) }
    Thing.prototype.receiver = /* defined below */                                                                 /*|*/ undefined
    Thing.counter = 1
    
