@@ -47,6 +47,16 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
          else if (argument instanceof Thing)    it.metadata.push(new Relation(argument))
          else if (argument) Object.getOwnPropertyNames(argument).forEach(function(key){
             it.metadata.push(new R(Thing.pair(key, argument[key]), true)) }) }) }
+   
+   Thing.prototype.compare = function(right){ return this === right }
+   
+   Thing.prototype.lookup = function(right){ ;debugger;
+      return this.metadata.reverse().map(function(rel){
+         return rel.to instanceof Thing
+             && rel.to.metadata[1] && rel.to.metadata[2]
+             && rel.to.metadata[1].to.compare(right)?
+                                      rel.to.metadata[2].to : undefined })
+            .filter(function(_){return _}) }
                                                                                      paws.Relation =
    R=Relation = function(to, responsible){ var it = construct(this)
       it.to = to || undefined
@@ -56,6 +66,9 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
       it.string = string || undefined }
    inherits(Thing, Label)
    Label.prototype.toString = function(){ return ANSI.cyan("'"+this.string+"'") }
+   
+   Label.prototype.compare = function(right){
+      return right instanceof Label && this.string === right.string }
                                                                                    ;paws.Execution =
    Execution = function(something, MD){ var it = construct(this)
          it.pristine = true
@@ -596,6 +609,14 @@ check.drill('.metadata[2].to')
 (function(second){ return second.metadata[2] instanceof Relation
                        &&!second.metadata[2].responsible
                        && second.metadata[2].to === something_else })
+
+$(  new Thing({ foo: something, bar: something_else })  )
+(function(person){ return person.lookup(new Label('foo'))[0] === something })
+(function(person){ return person.lookup(new Label('bar'))[0] === something_else })
+
+$(  new Thing(new Thing(something, something_else))  )
+(function(thing){ return thing.lookup(something)[0] === something_else })
+
 })
 /* Parsing tests
 // ============= */
