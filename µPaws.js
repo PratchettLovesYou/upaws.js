@@ -17,11 +17,10 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
   , paws = new Object()                                                                                           /*|*/;~function $(l,n){ l(function(i){n=i}); if(n)$(n) }
                                                                                                                   /*|*/ (function one($){ $(function two($){
                                                                                         paws.Thing =
-   Thing = function(metadata){ var it = construct(this)
+   Thing = function(/* metadata... */){ var it = construct(this)
       it._id = Thing.counter++
-      it.receiver = /* super */                                                                                   /*|*/ undefined
-      it.metadata = (metadata || [/* Relation */]).map(function(thing){
-         return thing instanceof Relation? thing : new Relation(thing) }) }
+      it.metadata = new Array
+      it.affix.apply(it, arguments) }
    Thing.prototype.receiver = /* defined below */                                                                 /*|*/ undefined
    Thing.counter = 1
    
@@ -36,6 +35,16 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
    
    Thing.prototype.toString = function(){ return this.named? this.name:'' }
    Thing.prototype.inspect = function(){ return Thing.inspect(this, false) } 
+   
+   Thing.pair = function(key, value){ return new Thing( new Label(key), value ) }
+   
+   // Convenience approximation of libside `affix`
+   Thing.prototype.affix = function(){ var it = this
+      Array.prototype.slice.call(arguments).forEach(function(argument){
+              if (argument instanceof Relation) it.metadata.push(argument)
+         else if (argument instanceof Thing)    it.metadata.push(new Relation(argument))
+         else if (argument) Object.getOwnPropertyNames(argument).forEach(function(key){
+            it.metadata.push(new R(Thing.pair(key, argument[key]), true)) }) }) }
                                                                                      paws.Relation =
    R=Relation = function(to, responsible){ var it = construct(this)
       it.to = to || undefined
