@@ -64,7 +64,9 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
          it.position = something || undefined
          it.stack = [] }
       
-      it.locals = null }
+      it.locals = new Thing()._name(ANSI.brblack('locals'))
+      it       .affix({locals: it.locals})
+      it.locals.affix({locals: it.locals}) }
    inherits(Thing, Execution)
    Execution.prototype.receiver = /* defined below */                                                             /*|*/ undefined
    
