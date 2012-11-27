@@ -544,6 +544,59 @@ if (require.main === module)
    
 new Battery(function(){
 
+/* Datatype tests
+// ============== */
+new Battery(function(){
+$(  new Thing  )
+('empty','._id > 0')
+('empty','.metadata.length === 1')
+('empty','.metadata[0].responsible')
+$(  new Thing().metadata[0].to  )
+('noughty','.metadata.length === 0')
+
+var something = new Thing, something_else = new Thing
+$(  new Thing  )
+(function(thing){        thing.affix(something, something_else)
+                  return thing.metadata.length === 3 })
+(function(thing){ return thing.metadata[1] instanceof Relation })
+(function(thing){ return thing.metadata[1].to === something })
+(function(thing){ return!thing.metadata[1].responsible })
+(function(thing){ return thing.metadata[2] instanceof Relation })
+(function(thing){ return thing.metadata[2].to === something_else })
+(function(thing){ return!thing.metadata[2].responsible })
+$(  new Thing  )
+(function(thing){        thing.affix(new Relation(something, true))
+                  return thing.metadata.length === 2 })
+.drill('.metadata[1]')
+(function(first){ return first instanceof Relation })
+(function(first){ return first.to === something })
+        ('first',            '.responsible')
+
+var check =
+$(  new Thing  )
+(function(thing){        thing.affix({foo: something, bar: something_else})
+                  return thing.metadata.length === 3 })
+(function(thing){ return thing.metadata[1] instanceof Relation
+                      && thing.metadata[1].responsible })
+
+check.drill('.metadata[1].to')
+(function(first){ return first.metadata[1] instanceof Relation
+                      &&!first.metadata[1].responsible
+                      && first.metadata[1].to instanceof Label
+                      && first.metadata[1].to.string === 'foo' })
+(function(first){ return first.metadata[2] instanceof Relation
+                      &&!first.metadata[2].responsible
+                      && first.metadata[2].to === something })
+
+check.drill('.metadata[2].to')
+(function(second){ return second.metadata[1] instanceof Relation
+                       &&!second.metadata[1].responsible
+                       && second.metadata[1].to instanceof Label
+                       && second.metadata[1].to.string === 'bar' })
+(function(second){ return second.metadata[2] instanceof Relation
+                       &&!second.metadata[2].responsible
+                       && second.metadata[2].to === something_else })
+})
 /* Parsing tests
 // ============= */
 new Battery(function(){
