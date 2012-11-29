@@ -27,20 +27,21 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
    Thing.prototype.receiver = /* defined below */                                                                 /*|*/ undefined
    Thing.counter = 1
    
-   Thing.inspect = function(it, bare) {
-      return ANSI.brblack('❲'+it._id+'❳') + (bare? '':it.toString()) }
+   Thing.inspectID = function(it) {
+      return ANSI.brblack('❲'+it._id+'❳') }
+   
+   Thing.prototype.toArray = function(){
+      return this.metadata.map(function(e){ return e? e.to:e }) }
    
    getter(Thing.prototype, 'named',
       function(){ return this.hasOwnProperty('name') })
    Thing.prototype.name = function(name){ this.name = name; return this }
    Thing.prototype._name = function(name){
+      this        .named = true
       this        .toString = function(){ return name }; return this }
    
    Thing.prototype.toString = function(){ return this.named? this.name:'' }
    Thing.prototype.inspect = function(){ return Thing.inspect(this, false) } 
-   
-   Thing.prototype.toArray = function(){
-      return this.metadata.map(function(e){ return e.to }) }
    
    Thing.pair = function(key, value){ return new Thing( new Label(key), value ) }
    
@@ -434,7 +435,7 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
    I = function I(it) { var a, b, tag
       if (!(it instanceof Thing)) return (it?
          (it.inspect? it.inspect:it.toString).call(it) : ANSI.red('null') )
-      if (/\n/.test(a = it.inspect()) && log.element) { tag = Thing.inspect(it, true)
+      if (/\n/.test(a = it.inspect()) && log.element) { tag = Thing.inspectID(it)
          b = log.element(tag + it.toString()); log.extra(tag, a); return b }
          else return a }
                                                                                         paws.debug =
@@ -456,12 +457,11 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
          output = Array.prototype.slice.call(arguments).join(', ')
             .replace(/\033\*(\d+)/g, function(_, n, offset, output){ return elements[n].shift() })
          
-         console.log(ANSI.SGR(40)+before+output+' '+ANSI.SGR(49) )
+         console.log(before+output)
          elements.forEach(function(e){e.forEach(function(e){
-            console.log(ANSI.SGR(40)
-            +(e[0]+e[1]).split("\n").map(function(l){
+            console.log( (e[0]+e[1]).split("\n").map(function(l){
                return new Array(ANSI.strip(e[0]).length+indent).join(' ')+l+' '
-            }).join("\n").slice(ANSI.strip(e[0]).length)+' '+ANSI.SGR(49)) })})
+            }).join("\n").slice(ANSI.strip(e[0]).length) ) })})
          
          delete log.element; delete log.extra }}
                                                                                         debug.ANSI =
