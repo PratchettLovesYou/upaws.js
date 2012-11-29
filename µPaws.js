@@ -21,8 +21,9 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
       it._id = Thing.counter++
       it.metadata = new Array
       it.affix.apply(it, arguments)
-      if (arguments.callee.caller !== arguments.callee)
-         it.metadata.unshift(new R(new Thing, true)) }
+      if (arguments.callee.caller !== arguments.callee
+      &&  it.metadata.length > 0)
+         it.metadata.unshift(undefined) }
    Thing.prototype.receiver = /* defined below */                                                                 /*|*/ undefined
    Thing.counter = 1
    
@@ -38,6 +39,9 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
    Thing.prototype.toString = function(){ return this.named? this.name:'' }
    Thing.prototype.inspect = function(){ return Thing.inspect(this, false) } 
    
+   Thing.prototype.toArray = function(){
+      return this.metadata.map(function(e){ return e.to }) }
+   
    Thing.pair = function(key, value){ return new Thing( new Label(key), value ) }
    
    // Convenience approximation of libside `affix`
@@ -50,11 +54,11 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
    
    Thing.prototype.compare = function(right){ return this === right }
    
-   Thing.prototype.lookup = function(right){ ;debugger;
+   Thing.prototype.lookup = function(key){
       return this.metadata.reverse().map(function(rel){
-         return rel.to instanceof Thing
+         return rel && rel.to instanceof Thing
              && rel.to.metadata[1] && rel.to.metadata[2]
-             && rel.to.metadata[1].to.compare(right)?
+             && rel.to.metadata[1].to.compare(key)?
                                       rel.to.metadata[2].to : undefined })
             .filter(function(_){return _}) }
                                                                                      paws.Relation =
@@ -168,7 +172,11 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
    
    
    /* Interpretation
-   // ============== */                                                                  paws.Mask =
+   // ============== */
+   Thing.prototype.receiver = new Execution(function(rv){ var arguments = rv.toArray()
+    , results = arguments[1].lookup(arguments[2])
+      Stage.queue.push(new Staging(arguments[0], resumptionValue)) })
+                                                                                         paws.Mask =
    Mask = function(owner, roots){ var it = construct(this)
       it.owner = owner || undefined
       it.roots = roots || [/* Thing */] }
@@ -562,25 +570,22 @@ new Battery(function(){
 new Battery(function(){
 $(  new Thing  )
 ('empty','._id > 0')
-('empty','.metadata.length === 1')
-('empty','.metadata[0].responsible')
-$(  new Thing().metadata[0].to  )
-('noughty','.metadata.length === 0')
+('empty','.metadata.length === 0')
 
 var something = new Thing, something_else = new Thing
 $(  new Thing  )
 (function(thing){        thing.affix(something, something_else)
-                  return thing.metadata.length === 3 })
+                  return thing.metadata.length === 2 })
+(function(thing){ return thing.metadata[0] instanceof Relation })
+(function(thing){ return thing.metadata[0].to === something })
+(function(thing){ return!thing.metadata[0].responsible })
 (function(thing){ return thing.metadata[1] instanceof Relation })
-(function(thing){ return thing.metadata[1].to === something })
+(function(thing){ return thing.metadata[1].to === something_else })
 (function(thing){ return!thing.metadata[1].responsible })
-(function(thing){ return thing.metadata[2] instanceof Relation })
-(function(thing){ return thing.metadata[2].to === something_else })
-(function(thing){ return!thing.metadata[2].responsible })
 $(  new Thing  )
 (function(thing){        thing.affix(new Relation(something, true))
-                  return thing.metadata.length === 2 })
-.drill('.metadata[1]')
+                  return thing.metadata.length === 1 })
+.drill('.metadata[0]')
 (function(first){ return first instanceof Relation })
 (function(first){ return first.to === something })
         ('first',            '.responsible')
@@ -588,11 +593,11 @@ $(  new Thing  )
 var check =
 $(  new Thing  )
 (function(thing){        thing.affix({foo: something, bar: something_else})
-                  return thing.metadata.length === 3 })
-(function(thing){ return thing.metadata[1] instanceof Relation
-                      && thing.metadata[1].responsible })
+                  return thing.metadata.length === 2 })
+(function(thing){ return thing.metadata[0] instanceof Relation
+                      && thing.metadata[0].responsible })
 
-check.drill('.metadata[1].to')
+check.drill('.metadata[0].to')
 (function(first){ return first.metadata[1] instanceof Relation
                       &&!first.metadata[1].responsible
                       && first.metadata[1].to instanceof Label
@@ -601,7 +606,7 @@ check.drill('.metadata[1].to')
                       &&!first.metadata[2].responsible
                       && first.metadata[2].to === something })
 
-check.drill('.metadata[2].to')
+check.drill('.metadata[1].to')
 (function(second){ return second.metadata[1] instanceof Relation
                        &&!second.metadata[1].responsible
                        && second.metadata[1].to instanceof Label
