@@ -178,7 +178,9 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
    // ============== */
    Thing.prototype.receiver = new Execution(function(rv){ var arguments = rv.toArray()
     , results = arguments[1].lookup(arguments[2])
-      Stage.queue.push(new Staging(arguments[0], resumptionValue)) })
+      if (results[0])
+         Stage.queue.push(new Staging(arguments[0], results[0])) })
+   .name('thing×')
                                                                                          paws.Mask =
    Mask = function(owner, roots){ var it = construct(this)
       it.owner = owner || undefined
