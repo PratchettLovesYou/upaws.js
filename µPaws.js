@@ -127,7 +127,9 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
          this.position = s.next
          return juxt }
       
-      juxt = { context: this, left: this.position.contents, right: this.position.next.contents }
+      juxt = { context: this
+             , left: this.position.contents || this.locals
+             , right: this.position.next.contents }
       this.position = this.position.next.next;
       return juxt
    }
