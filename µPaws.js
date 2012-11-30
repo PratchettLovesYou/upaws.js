@@ -140,7 +140,7 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
       
       if (typeof this.position.next === 'undefined') {
          s = this.stack.pop()
-         juxt = { context: this, left: s.value, right: this.position.contents }
+         juxt = { context: this, left: s.value, right: this.position.contents || this }
          this.position = s.next
          return juxt }
       
@@ -198,6 +198,10 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
       if (results[0])
          Stage.queue.push(new Staging(arguments[0], results[0])) })
    .name('thing×')
+   
+   Execution.prototype.receiver = new Execution(function(rv){ var arguments = rv.toArray()
+      Stage.queue.push(new Staging(arguments[1].clone(), arguments[2])) })
+   .name('execution×')
                                                                                          paws.Mask =
    Mask = function(owner, roots){ var it = construct(this)
       it.owner = owner || undefined
@@ -290,7 +294,7 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
       // `Staging`, so no need to re-verify. If it’s defined, then we add it to the table.
       if (staging.requestedMask) Stage.ownershipTable.add(staging.requestedMask)
       
-      ~function(){
+      ~function(){ var juxt, receiver
          // Finally!
          // First, we handle the special-case of an alien Execution, and immediately return to
          // short-circuit handling of native executions;
@@ -299,18 +303,13 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
                  that.occupant.advance()   .call(that.occupant, resumptionValue)
             return }
          
-         // NYI: ... and then, failing that, proceed to handle native executions.
-         ;($$ = function(resumptionValue){ var
-            pair = that.occupant.advance(resumptionValue)
-            // find juxtaposition handler
-            // if alien, stack on an argument
-            //    if has all arguments, call on-the-stack
-            // if denizen, "call" pattern
-            //    create staging
-            //    (are we going to transfer ownerships for a call pattern?)
-            //    queue staging
-            //    unstage self
-         } )(resumptionValue)
+         if (!(
+            juxt = that.occupant.advance(resumptionValue) )) return
+         receiver = juxt.left.receiver.clone()
+         resumptionValue = new Thing
+         resumptionValue.affix(juxt.context, juxt.left, juxt.right)
+         
+         Stage.queue.push(new Staging(receiver, resumptionValue))
       }()
       
       if (that.occupant.complete())
@@ -318,17 +317,6 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
       
       that.occupant = undefined
       Stage.current = undefined }
-   //                                                                       Thing.prototype.receiver =
-   //metadataReceiver = function(arguments){ var caller = arguments.get(1)
-   // , LEFT = arguments.get(2)
-   // , RIGHT = arguments.get(3)
-   //   
-   //   for (var i = LEFT.metadata.length - 1; i >= 0; --i) {
-   //      if (LEFT.get(i).get(1) ===
-   //   }
-   //   }
-                                                                      Execution.prototype.receiver =
-   executionReceiver = function(){}
    
    Stage.prototype.
    intervalID = 0
