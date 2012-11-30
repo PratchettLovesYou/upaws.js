@@ -81,18 +81,27 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
    Label.prototype.compare = function(right){
       return right instanceof Label && this.string === right.string }
                                                                                    ;paws.Execution =
-   Execution = function(something, MD){ var it = construct(this)
-         it.pristine = true
-      if (typeof something === 'function') {
-         it.alien = true
-         it.subs = Array.prototype.slice.call(arguments) }
-      else {
-         it.position = something || undefined
-         it.stack = [] }
+   Execution = function(something){ var   original, it = construct(this)
+      if (something instanceof Execution) original = something
       
-      it.locals = new Thing()._name(ANSI.brblack('locals'))
-      it       .affix({locals: it.locals})
-      it.locals.affix({locals: it.locals}) }
+         it.pristine = original? original.pristine : true
+      if (original && original.alien
+      ||  typeof something === 'function') {
+         it.alien = true
+         it.subs = Array.prototype.slice.call(original? original.subs : arguments) }
+      else {
+         it.position = original? original.position      : something || undefined
+         it.stack    = original? original.stack.slice() : new Array }
+      
+      if (original) // XXX: For now, clones are going to *share* locals.
+         it.locals = original.locals
+      else {
+         it.locals = new Thing()._name(ANSI.brblack('locals'))
+         it       .affix({locals: it.locals})
+         it.locals.affix({locals: it.locals}) }
+      
+      if (original && original.hasOwnProperty('name'))
+         it.name = original.name + '′' }
    inherits(Thing, Execution)
    Execution.prototype.receiver = /* defined below */                                                             /*|*/ undefined
    
@@ -100,6 +109,8 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
    complete = function(){
       if (this.alien) return !this.subs.length
       else            return typeof this.position === 'undefined' && this.stack.length === 0 }
+   
+   Execution.prototype.clone = function(){ return new Execution(this) }
    
    Execution.prototype.
    advance = function(rv) { var juxt, s
