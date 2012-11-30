@@ -41,7 +41,13 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
       this        .toString = function(){ return name }; return this }
    
    Thing.prototype.toString = function(){ return this.named? this.name:'' }
-   Thing.prototype.inspect = function(){ return Thing.inspect(this, false) } 
+   Thing.prototype.inspect = function(){
+      return function $$(it, i, seen){
+         if (seen.indexOf(it) >= 0) return it.toString(); else seen.push(it)
+         return Thing.inspectID(it) +ANSI.brwhite('(')+it.toArray().map(function(thing){
+            return thing? thing.constructor === Thing?
+               ANSI.wrap('48;5;'+(232+(++i)*2),'48;5;'+(232+(i-1)*2))($$(thing, i, seen)) : thing.toString() :'' })
+            .join(ANSI.brwhite(', '))+ANSI.brwhite(')')+ANSI.SGR('49') }(this, 0, []) }
    
    Thing.pair = function(key, value){ return new Thing( new Label(key), value ) }
    
