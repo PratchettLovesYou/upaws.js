@@ -3,7 +3,7 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
   , /* Parsing: */         cPaws, Expression                                                                      /*|*/;var undefined, u
   , /* Staging queue: */   Mask, Stage, Staging, metadataReceiver, executionReceiver
   , /* Aliens: */          ǁ,infrastructure, parseNum
-  , /* Plumbing: */        inherits, construct, getter, noop
+  , /* Plumbing: */        inherits, construct, define, getter, noop
   , /* Debugging: */       P,I, D,debug, log, ANSI
    
   , USE_COLOR      = process.env['USE_COLOR'] === 'false' || true
@@ -33,8 +33,7 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
    Thing.prototype.toArray = function(){
       return this.metadata.map(function(e){ return e? e.to:e }) }
    
-   getter(Thing.prototype, 'named',
-      function(){ return this.hasOwnProperty('name') })
+   getter(Thing.prototype, 'named', function(){ return this.hasOwnProperty('name') })
    Thing.prototype.name = function(name){ this.name = name; return this }
    Thing.prototype._name = function(name){
       this        .named = true
@@ -401,9 +400,6 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
    
    /* Plumbing                                                                                                    /*|*/ }) // two()
    // ======== */
-   getter = function getter(object, property, getter) {
-      if (!object.hasOwnProperty(property))
-         Object.defineProperty(object, property, { get:getter, enumerable:false }) }
    noop = function noop(arg){ return arg }
    
    inherits = function(parent, constructor){ var
@@ -423,18 +419,41 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
           caller.parent.apply(it, passed) }
       return it }
    
+   
+   define = function(prototype, property, value){ var
+           propertyAlreadyExists = prototype.hasOwnProperty(property)
+      if (!propertyAlreadyExists) Object.defineProperty(prototype, property, { value:value, enumerable:false }) }
+   
+   getter = function(prototype, property, getter){ var
+           propertyAlreadyExists = prototype.hasOwnProperty(property)
+      if (!propertyAlreadyExists) Object.defineProperty(prototype, property, { get:getter, enumerable:false }) }
+   
+   getter(Array.prototype, 'first',   function(){   return  this[0] })
+   getter(Array.prototype, 'last',    function(){   return  this[this.length - 1] })
+   getter(Array.prototype, '-1',      function(){   return  this[this.length - 1] })
+   getter(Array.prototype, '-2',      function(){   return  this[this.length - 2] })
+   getter(Array.prototype, 'empty',   function(){   return !this.length })
+   define(Array.prototype, 'include', function(it){ return  this.indexOf(it) !== -1 })
+   
    // Remove all common elements from a pair of `Array`s.
    // !! DESTRUCTIVELY MODIFIES ITS ARGUMENTS !!
-   Array.prototype.intersect = function(them){ var that = this
+   define(Array.prototype, 'intersect', function(them){ var that = this
       this.slice().forEach(function(e){ var kill, iA, iB
          if (that.indexOf(e) + them.indexOf(e) > -2) {
             that.deleteAll(e)
             them.deleteAll(e) } })
-      return this }
-   Array.prototype.union = function(){ /* NYI */ }
-   Array.prototype.deleteAll = function(element){ var i
+      return this })
+   define(Array.prototype, 'union', function(){ /* NYI */ })
+   define(Array.prototype, 'deleteAll', function(element){ var i
       while ((i = this.indexOf(element)) !== -1)
-         delete this[i] }
+         delete this[i] })
+   
+   define(Array.prototype, 'firstThat', function(_){ var rv
+      return this                   .some(function(element){ return _(rv = element) }) ? rv : null })
+   define(Array.prototype, 'lastThat', function(_){ var rv
+      return this.slice(0).reverse().some(function(element){ return _(rv = element) }) ? rv : null })
+   
+   getter(Object.prototype, 'peek', function(){ console.log(require('sys').inspect(this)); return this })
    
    /* Debugging
    // ========= */
@@ -444,7 +463,7 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
    I = function I(it) { var a, b, tag
       if (!(it instanceof Thing)) return (it?
          (it.inspect? it.inspect:it.toString).call(it) : ANSI.red('null') )
-      if (/\n/.test(a = it.inspect()) && log.element) { tag = Thing.inspectID(it)
+      if (log.element && /\n/.test(a = it.inspect()) || ANSI.strip(a).length >= 60) { tag = Thing.inspectID(it)
          b = log.element(tag + it.toString()); log.extra(tag, a); return b }
          else return a }
                                                                                         paws.debug =
