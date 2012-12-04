@@ -40,13 +40,32 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
       this        .toString = function(){ return name }; return this }
    
    Thing.prototype.toString = function(){ return this.named? this.name:'' }
-   Thing.prototype.inspect = function(){
-      return function $$(it, i, seen){
-         if (seen.indexOf(it) >= 0) return it.toString(); else seen.push(it)
-         return Thing.inspectID(it) +ANSI.brwhite('(')+it.toArray().map(function(thing){
+   Thing.prototype.inspect = function(){ var indent = 0
+      return function $$(it, i, seen, split){ var content, lines, old_seen = seen.slice()
+         if (!split && seen.indexOf(it) >= 0)
+            return Thing.inspectID(it)+it.toString(); else seen.push(it)
+         
+         if (it.metadata.length === 3
+         &&  it.metadata[1] && it.metadata[1].to instanceof Label
+         &&  it.metadata[2])
+                content = ANSI.cyan(it.metadata[1].to.string+': ')
+                        + $$(it.metadata[2].to, ++i, seen)
+         else { content = Thing.inspectID(it)+ANSI.brwhite('(')
+                        + it.toArray().map(function(thing){
             return thing? thing.constructor === Thing?
-               ANSI.wrap('48;5;'+(232+(++i)*2),'48;5;'+(232+(i-1)*2))($$(thing, i, seen)) : thing.toString() :'' })
-            .join(ANSI.brwhite(', '))+ANSI.brwhite(')')+ANSI.SGR('49') }(this, 0, []) }
+               $$(thing, ++i, seen) : thing.toString():'' })
+            .join((split?"\n":'')+ANSI.brwhite(', '))+ANSI.brwhite(')')
+            
+            lines = content.split("\n")
+            if (split)
+               content = lines.join("\n   ")
+            else if (ANSI.strip(lines.first).length > 60
+                 ||  ANSI.strip(lines.last) .length > 60)
+               return $$(it, 0, old_seen, true) }
+            //else content = ANSI.wrap('48;5;'+(232+(i)),i>1?'48;5;'+(232+(i-1)):49)(content) }
+         
+         return content
+         }(this, 0, []) }//+ANSI.SGR(49) }
    
    Thing.pair = function(key, value){ return new Thing( new Label(key), value ) }
    
@@ -104,6 +123,21 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
    inherits(Thing, Execution)
    Execution.prototype.receiver = /* defined below */                                                             /*|*/ undefined
    
+   Execution.prototype.toString = function toString() { return this.alien
+    ? ANSI.brmagenta(this.named? '´'+this.name+'´' : '´anon´')
+    : ANSI.brmagenta(this.named? '`'+this.name+'`' : '`anon`') }
+   Execution.prototype.inspect = function() { var rv = new Array
+     !this.alien && this.stack.length > 0 && rv.push(ANSI.brblack('stack:    ')
+       + ANSI.brwhite('[') + this.stack.reverse().map(function(e){
+            return Thing.prototype.inspect.call(e) })
+               .join(ANSI.brwhite(', ')) + ANSI.brwhite(']'))
+     !this.alien && rv.push(ANSI.brblack('position: ')
+       + (this.position? this.position.inspect()
+                       : Expression.prototype.inspect.call({genesis: this.genesis})))
+      this.alien && rv.push(ANSI.brblack('subs: ')+this.subs.length)
+      rv.push(ANSI.brblack('locals:   ')+this.locals.inspect())
+      return rv.join("\n") }
+   
    Execution.prototype.
    complete = function(){
       if (this.alien) return !this.subs.length
@@ -157,6 +191,13 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
       it.contents = contents || undefined
       it.next = next || undefined }
    
+   Expression.prototype.toString = function(){}
+   Expression.prototype.inspect = function(){ var g
+      if (g = this.genesis)
+         return  '{ '+ g.original.substring(0,          g.index[0])
+          + ANSI.brred(g.original.substring(g.index[0], g.index[1]))
+          +            g.original.substring(g.index[1])+' }'}
+   
    Expression.prototype.
    append = function(next){ var pos = this
       while (pos.next) pos = pos.next
@@ -166,25 +207,30 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
    
    cPaws.
    parse = function(text){ var i = 0
+    , genesis = function(result, a, z){ result.genesis =
+       { original: text
+       , index: [a, z]
+       , string: text.slice(a, z) }
+         return result }
+      
     , character = function(c){ return text[i] === c && ++i }
     , whitespace = function(){ while (character(' ')); return true }
     , braces = function(chars, constructor) {
-         return function(){ var $
+         return function(){ var a = i, $
             if (whitespace() && character(chars[0]) && ($ = expr()) && whitespace() && character(chars[1]))
-               return new constructor($)
-            else return false } }
+               return genesis(new constructor($),a,i) } }
       
     , paren = braces('()', function(_){return _})
     , scope = braces('{}', Execution)
-    , label = function(){ whitespace(); var $ = ''
+    , label = function(){ whitespace(); var a = i, $ = ''
          while ( text[i] && cPaws.labelCharacters.test(text[i]) )
             $ = $.concat(text[i++])
-         return $ && new Label($) }
+         return $ && genesis(new Label($),a,i) }
       
-    , expr = function(){ var _, $ = new Expression()
-         while (_ = paren() || scope() || label() )
-            $.append(new Expression(_))
-         return $ }
+    , expr = function(){ var a = i, b = i, _, $ = new Expression()
+         while (_ = paren() || scope() || label() ) {
+            $.append( genesis(new Expression(_),b,i) ); b = i }
+         return genesis($,a,i) }
       
       return expr() }
    
