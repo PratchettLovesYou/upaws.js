@@ -23,7 +23,8 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
       it.affix.apply(it, arguments)
       if (arguments.callee.caller !== arguments.callee
       &&  it.metadata.length > 0)
-         it.metadata.unshift(undefined) }
+         it.metadata.unshift(undefined)
+      return it }
    Thing.prototype.receiver = /* defined below */                                                                 /*|*/ undefined
    Thing.counter = 1
    
