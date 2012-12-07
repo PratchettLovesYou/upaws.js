@@ -485,19 +485,19 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
                               : { enumerable: false, value: value  }
       if (!propertyAlreadyExists) Object.defineProperty(prototype, property, descriptor) }
    
-   getter = function(){ define.apply(this, [].concat.apply(arguments, noop)) }
+   getter = function(){ define.apply(this, [].slice.apply(arguments).concat(noop)) }
    
-   define(Array.prototype, 'first', function( ){ return  this[0] }
-                                  , function($){         this[0] = $ })
-   define(Array.prototype, 'last',  function( ){ return  this[this.length? this.length - 1:0] }
-                                ,   function($){         this[this.length? this.length - 1:0] = $ })
-   define(Array.prototype, '-1',    function( ){ return  this[this.length? this.length - 1:0] }
-                               ,    function($){         this[this.length? this.length - 1:0] = $ })
-   define(Array.prototype, '-2',    function( ){ return  this[this.length? this.length - 2:0] }
-                              ,     function($){         this[this.length? this.length - 2:0] = $ })
-   
-   getter(Array.prototype, 'empty',   function(){ return !this.length })
-   define(Array.prototype, 'include', function(it){ return  this.indexOf(it) !== -1 })
+   define(Array.prototype, 'first', function( ){ return this[0] }
+                                  , function($){        this[0] = $ })
+   define(Array.prototype, 'last',  function( ){ return this[this.length? this.length - 1:0] }
+                                ,   function($){        this[this.length? this.length - 1:0] = $ })
+   define(Array.prototype, '-1',    function( ){ return this[this.length? this.length - 1:0] }
+                               ,    function($){        this[this.length? this.length - 1:0] = $ })
+   define(Array.prototype, '-2',    function( ){ return this[this.length? this.length - 2:0] }
+                              ,     function($){        this[this.length? this.length - 2:0] = $ })
+;debugger;
+   getter(Array.prototype, 'empty',   function(){ return !this.filter(noop).length })
+   define(Array.prototype, 'include', function(it){ return this.indexOf(it) !== -1 })
    
    // Remove all common elements from a pair of `Array`s.
    // !! DESTRUCTIVELY MODIFIES ITS ARGUMENTS !!
