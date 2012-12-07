@@ -759,17 +759,17 @@ new Check(  execution .position .next  )
 // ================= */
 new Battery(function(){
 
-var func1 = new Function(), func2 = new Function()
+var func1 = new Function, func2 = new Function
 new Check(  new Execution(func1, func2)  )
-(function(alien){ return  alien.pristine && !alien.complete() })
-(function(alien){ return  alien.subs.length === 2 })
+(function(alien){ return alien.pristine && !alien.complete() })
+(function(alien){ return alien.subs.length === 2 })
 
-(function(alien){ return  alien.advance() === func1 })
-(function(alien){ return !alien.pristine })
-(function(alien){ return  alien.subs.length === 1 })
+(function(alien){ return alien.advance() === func1 })
+(function(alien){ return!alien.pristine })
+(function(alien){ return alien.subs.length === 1 })
 
-(function(alien){ return  alien.advance() === func2 })
-(function(alien){ return  alien.complete() })
+(function(alien){ return alien.advance() === func2 })
+(function(alien){ return alien.complete() })
 
 new Check(  new Execution(cPaws.parse(''))  )
 (function(native){ return pending; return  native.pristine })
@@ -786,7 +786,7 @@ new Check(  a_native  )
 (function(native){ return  native.pristine
                        && !native.complete() })
 (function(native){ var juxt = native.advance()
-         return typeof juxt.left === 'undefined'
+                return juxt.left === native.locals
                     && juxt.right === some_label })
 (function(native){ return !native.pristine
                        &&  native.complete() })
@@ -804,7 +804,7 @@ new Check(  a_native  )
 (function(native){ return  native.pristine
                        && !native.complete() })
 (function(native){ var juxt = native.advance()
-         return typeof juxt.left === 'undefined'
+                return juxt.left === native.locals
                     && juxt.right === first_label })
 (function(native){ return !native.pristine })
 (function(native){ var juxt = native.advance(arbitrary_thing)
@@ -825,7 +825,7 @@ new Check(  a_native  )
 (function(native){ return  native.pristine
                        && !native.complete() })
 (function(native){ var juxt = native.advance()
-         return typeof juxt.left === 'undefined'
+                return juxt.left === native.locals
                     && juxt.right === some_label })
 (function(native){ return !native.pristine })
 (function(native){ var juxt = native.advance(arbitrary_thing)
