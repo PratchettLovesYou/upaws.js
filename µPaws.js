@@ -504,7 +504,12 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
    define(Array.prototype, 'lastThat', function(_){ var rv
       return this.slice(0).reverse().some(function(element){ return _(rv = element) }) ? rv : null })
    
+   define(String.prototype, 'toFunction', function(){
+      arguments = [].slice.apply(arguments.length? arguments:['it'])
+      return global.eval('(function('+arguments.join(', ')+'){ return '+arguments[0]+this+' })') })
+   
    getter(Object.prototype, 'peek', function(){ console.log(require('sys').inspect(this)); return this })
+   getter(Object.prototype, '_', function(){ return this.toFunction? this.toFunction() : this })
    
    /* Debugging
    // ========= */
@@ -625,10 +630,6 @@ if (require.main === module)
           : result?                   [1,0,0]
           :                           [0,0,1]
           , acc) }, Check.pristine) }
-   
-   String.prototype.toFunction = function(){
-      arguments = [].slice.apply(arguments.length? arguments:['it'])
-      return global.eval('(function('+arguments.join(', ')+'){ return '+arguments[0]+this+' })') }
    
    testing.log = function(n, string, max){ max = max || 100; console.log(
       // This monstrosity splits a string into lines, and further splits any lines over `max`
