@@ -90,10 +90,12 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
                                                                                      paws.Relation =
    R=Relation = function(to, responsible){ var it = construct(this)
       it.to = to || undefined
-      it.responsible = responsible || undefined }
+      it.responsible = responsible || undefined
+      return it }
                                                                                         paws.Label =
    Label = function(string, MD){ it = construct(this, [MD])
-      it.string = string || undefined }
+      it.string = string || undefined
+      return it }
    inherits(Thing, Label)
    Label.prototype.toString = function(){ return ANSI.cyan("'"+this.string+"'") }
    
@@ -120,7 +122,8 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
          it.locals.affix({locals: it.locals}) }
       
       if (original && original.hasOwnProperty('name'))
-         it.name = original.name + '′' }
+         it.name = original.name + '′'
+      return it }
    inherits(Thing, Execution)
    Execution.prototype.receiver = /* defined below */                                                             /*|*/ undefined
    
@@ -208,7 +211,8 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
    // ======= */                                                                   paws.Expression =
    Expression = function(contents, next){ var it = construct(this)
       it.contents = contents || undefined
-      it.next = next || undefined }
+      it.next = next || undefined
+      return it }
    
    Expression.prototype.toString = function(){}
    Expression.prototype.inspect = function(){ var g
@@ -289,7 +293,8 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
                                                                                         paws.Stage =
    Stage = function(){ var it = construct(this)
       it.occupant = undefined
-      if (!Stage.default) Stage.default = it }
+      if (!Stage.default) Stage.default = it
+      return it }
    
    // Non-concurrent implementation! Yay! </sarcasm>
    Stage.current = undefined
@@ -323,7 +328,8 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
    Staging = function(stagee, resumptionValue, requestedMask){ var it = construct(this)
       it.stagee = stagee || undefined
       it.resumptionValue = resumptionValue || undefined
-      it.requestedMask = requestedMask || undefined }
+      it.requestedMask = requestedMask || undefined
+      return it }
    
    Stage.ownershipTable = { blamees: [/* execution */]
                           , masks:   [/* Mask */] }
