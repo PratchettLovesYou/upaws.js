@@ -126,7 +126,13 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
    
    Execution.synchronous = function(func){ var it = new Execution(new Function)
       it.subs = new Array(func.length).join().split(',').map(function(){
-         return function(rv){ it.subs.last = it.subs.last.bind(it, rv) } })
+         return function(caller, rv){
+            this.subs.last = this.subs.last.bind(this, rv)
+            Stage.queue.push(new Staging(caller, this)) } })
+      
+      it.subs.first = function(caller){ var that = this
+         that.subs = that.subs.map(function(sub){ return sub.bind(that, caller) })
+         Stage.queue.push(new Staging(caller, that)) }
       
       it.subs[func.length] = Function.apply(null, ['paws', 'func', 'caller'].concat(
          Array(func.length + 1).join('_').split(''), "paws.Stage.queue.push("
@@ -495,7 +501,7 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
                                ,    function($){        this[this.length? this.length - 1:0] = $ })
    define(Array.prototype, '-2',    function( ){ return this[this.length? this.length - 2:0] }
                               ,     function($){        this[this.length? this.length - 2:0] = $ })
-;debugger;
+   
    getter(Array.prototype, 'empty',   function(){ return !this.filter(noop).length })
    define(Array.prototype, 'include', function(it){ return this.indexOf(it) !== -1 })
    
@@ -784,7 +790,7 @@ new Check(  new Execution(func1, func2)  )
 (function(alien){ return alien.advance() === func2 })
 (function(alien){ return alien.complete() })
 
-var fun        = function(a, b, c){ return Thing(a, b, c) }
+var fun        = function(a, b, c){ return new Thing(a, b, c) }
   , caller     = new Execution(new Function)
   , parameters = {one: new Thing, two: new Thing, three: new Thing}
   , sub1, sub2
