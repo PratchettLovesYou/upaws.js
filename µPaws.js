@@ -123,6 +123,18 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
    inherits(Thing, Execution)
    Execution.prototype.receiver = /* defined below */                                                             /*|*/ undefined
    
+   Execution.synchronous = function(func){ var it = new Execution(new Function)
+      it.subs = new Array(func.length).join().split(',').map(function(){
+         return function(rv){ it.subs.last = it.subs.last.bind(it, rv) } })
+      
+      it.subs[func.length] = Function.apply(null, ['paws', 'func', 'caller'].concat(
+         Array(func.length + 1).join('_').split(''), "paws.Stage.queue.push("
+          + "new paws.Staging(caller, func.apply(this, [].slice.call(arguments, 3))))"))
+      .bind(it, paws, func)
+      
+      return it }
+      
+   
    Execution.prototype.toString = function toString() { return this.alien
     ? ANSI.brmagenta(this.named? '´'+this.name+'´' : '´anon´')
     : ANSI.brmagenta(this.named? '`'+this.name+'`' : '`anon`') }
@@ -770,6 +782,29 @@ new Check(  new Execution(func1, func2)  )
 
 (function(alien){ return alien.advance() === func2 })
 (function(alien){ return alien.complete() })
+
+var fun        = function(a, b, c){ return Thing(a, b, c) }
+  , caller     = new Execution(new Function)
+  , parameters = {one: new Thing, two: new Thing, three: new Thing}
+  , sub1, sub2
+new Check(  new Execution.synchronous(fun)  )
+(function(synch){ return synch.subs.length == 4 })
+(function(synch){ return synch.subs.last.length == 4 })
+(function(synch){        synch.advance()(caller)
+                  return synch.subs.length == 3
+                      && synch.subs.last.length == 3 })
+(function(synch){        synch.advance()(parameters.one)
+                  return synch.subs.length == 2
+                      && synch.subs.last.length == 2 })
+(function(synch){        synch.advance()(parameters.two)
+                  return synch.subs.length == 1
+                      && synch.subs.last.length == 1 })
+(function(synch){        synch.advance()(parameters.three)
+                     var staging = Stage.queue.pop()
+                  return synch.subs.length == 0
+                      && staging.stagee === caller
+                      && staging.resumptionValue && staging.resumptionValue.toArray()
+                        .intersect([parameters.one, parameters.two, parameters.three]).empty })
 
 new Check(  new Execution(cPaws.parse(''))  )
 (function(native){ return pending; return  native.pristine })
