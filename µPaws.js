@@ -98,7 +98,7 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
                                       rel.to.metadata[2].to : undefined })
             .filter(function(_){return _}) }
                                                                                         paws.Label =
-   Label = function(string, MD){ it = construct(this, [MD])
+   Label = function(string){ it = construct(this)
       it.string = string || undefined
       return it }
    inherits(Thing, Label)
