@@ -18,10 +18,10 @@ Object.keys(paws)
    
    var bar = new Thing().name('bar')
      , foo = new Thing({bar: bar}).name('foo')
-   ex.locals.affix({foo: foo})
+   ex.locals.push({foo: foo})
    
    var inf = new Thing({'whee!': whee}).name('infrastructure')
-   ex.locals.affix({infrastructure: inf})
+   ex.locals.push({infrastructure: inf})
    
    infrastructure.execution.stage(u,ex)
    
