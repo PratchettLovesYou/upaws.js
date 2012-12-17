@@ -278,7 +278,8 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
                                                                                          paws.Mask =
    Mask = function(owner, roots){ var it = construct(this)
       it.owner = owner || undefined
-      it.roots = roots || [/* Thing */] }
+      it.roots = roots || [/* Thing */]
+      return it }
    
    // Returns an array of all of the things that this `Mask`’s `roots` are responsible for.
    Mask.prototype.flatten = function(){
