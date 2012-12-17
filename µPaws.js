@@ -714,6 +714,8 @@ $(  new Thing  )
                   return thing.metadata.length === 2 })
 (function(thing){ return thing.metadata[0] instanceof Relation
                       && thing.metadata[0].isResponsible })
+(function(thing){ return thing.metadata[1] instanceof Relation
+                      && thing.metadata[1].isResponsible })
 
 check.drill('.metadata[0].to')
 (function(first){ return first.metadata[1] instanceof Relation
