@@ -18,7 +18,7 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
                                                                                                                   /*|*/ (function one($){ $(function two($){
                                                                                         paws.Thing =
    Thing = function(/* metadata... */){ var it = construct(this)
-      it._id = Thing.counter++
+      it.id = Thing.counter++
       it.metadata = new Array
       it.affix.apply(it, arguments)
       if (arguments.callee.caller !== arguments.callee
@@ -29,7 +29,7 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
    Thing.counter = 1
    
    Thing.inspectID = function(it) {
-      return ANSI.brblack('❲'+it._id+'❳') }
+      return ANSI.brblack('❲'+it.id+'❳') }
    
    Thing.prototype.toArray = function(){
       return this.metadata.map(function(e){ return e? e.to:e }) }
@@ -687,7 +687,7 @@ new Battery(function(){
 // ============== */
 new Battery(function(){
 $(  new Thing  )
-('empty','._id > 0')
+('empty','.id > 0')
 ('empty','.metadata.length === 0')
 
 var something = new Thing, something_else = new Thing
