@@ -552,7 +552,7 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
       arguments = [].slice.apply(arguments.length? arguments:['it'])
       return global.eval('(function('+arguments.join(', ')+'){ return '+arguments[0]+this+' })') })
    
-   getter(Object.prototype, 'peek', function(){ console.log(require('sys').inspect(this)); return this })
+   getter(Object.prototype, '‽', function(){ console.log(require('sys').inspect(this)); return this })
    getter(Object.prototype, '_', function(){ return this.toFunction? this.toFunction() : this })
    
    define(Function.prototype, 'calledBy', function(other, seen){ (seen = seen || []).push(this)
