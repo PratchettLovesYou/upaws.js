@@ -3,7 +3,7 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
   , /* Parsing: */         cPaws, Expression                                                                      /*|*/;var undefined, u
   , /* Staging queue: */   Mask, Stage, Staging, metadataReceiver, executionReceiver
   , /* Aliens: */          ǁ,infrastructure, parseNum
-  , /* Plumbing: */        inherits, construct, define, getter, noop
+  , /* Plumbing: */        inherits, construct, define, getter, chainee, noop
   , /* Debugging: */       P,I, D,debug, log, ANSI
    
   , USE_COLOR      = process.env['USE_COLOR'] === 'false' || true
@@ -67,8 +67,18 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
          
          return content
          }(this, 0, []) }//+ANSI.SGR(49) }
+                                                                                     paws.Relation =
+   R=Relation = function(to, resp){ var it = construct(this)
+      it.to = to || undefined
+      it.isResponsible = resp || undefined
+      return it }
    
-   Thing.pair = function(key, value){ return new Thing( new Label(key), value ) }
+   chainee(Relation.prototype, 'responsible',   function(){ this.isResponsible = true })
+   chainee(Relation.prototype, 'irresponsible', function(){ this.isResponsible = false })
+   getter(Thing.prototype,     'responsible',   function(){ return R(this).responsible })
+   getter(Thing.prototype,     'irresponsible', function(){ return R(this).irresponsible })
+   
+   Thing.pair = function(key, value){ return new Thing( new Label(key), value ).responsible }
    
    // Convenience approximation of libside `affix`
    Thing.prototype.affix = function(){ var it = this
@@ -87,11 +97,6 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
              && rel.to.metadata[1].to.compare(key)?
                                       rel.to.metadata[2].to : undefined })
             .filter(function(_){return _}) }
-                                                                                     paws.Relation =
-   R=Relation = function(to, responsible){ var it = construct(this)
-      it.to = to || undefined
-      it.responsible = responsible || undefined
-      return it }
                                                                                         paws.Label =
    Label = function(string, MD){ it = construct(this, [MD])
       it.string = string || undefined
@@ -280,7 +285,7 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
       return this.roots.reduce(function(acc, root){ var $$
          return ($$ = function(acc, it){ acc.push(it)
             return it.metadata.reduce(function(acc, relation){
-               if (relation.responsible) acc.push(relation.to)
+               if (relation.isResponsible) acc.push(relation.to)
                return acc }, acc) })(acc, root) }, new Array()) }
    
    // Compare with a foreign mask for conflicting responsibility
@@ -418,7 +423,7 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
     , clone: function(thing){ var metadata = thing.metadata
          thing = new Thing()
          thing.metadata = metadata.map(function(relation){
-            return new Relation(relation.to, relation.responsible) })
+            return new Relation(relation.to, relation.isResponsible) })
          return thing }
     , adopt: function(thing, other){ thing.metadata = other.metadata.slice() } // IDFK: Utilizes identical `Relation`ships.
       // More note on the above: not sure how I’m going to define these semantics eventually, but
@@ -432,8 +437,8 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
             receiver = new Execution(receiver)
          thing.receiver = receiver }
       
-    ,    charge: function(thing, number){ thing.metadata[parseNum(number)].responsible = true }
-    , discharge: function(thing, number){ thing.metadata[parseNum(number)].responsible = false }
+    ,    charge: function(thing, number){ thing.metadata[parseNum(number)].isResponsible = true }
+    , discharge: function(thing, number){ thing.metadata[parseNum(number)].isResponsible = false }
       
     , compare: function(thing1, thing2){ return thing1 === thing2 } // FIXME: Currently a JavaScript boolean. Need Paws booleans.
       
@@ -497,7 +502,10 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
                               : { enumerable: false, value: value  }
       if (!propertyAlreadyExists) Object.defineProperty(prototype, property, descriptor) }
    
-   getter = function(){ define.apply(this, [].slice.apply(arguments).concat(noop)) }
+   getter =  function(){ define.apply(this, [].slice.apply(arguments).concat(noop)) }
+   chainee = function(){ var a = arguments, b = [].slice.apply(arguments)
+                             b[2] = function(){ a[2].apply(this, arguments); return this }
+      getter.apply(this, [].slice.apply(b)) }
    
    define(Array.prototype, 'first', function( ){ return this[0] }
                                   , function($){        this[0] = $ })
@@ -535,6 +543,10 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
    
    getter(Object.prototype, 'peek', function(){ console.log(require('sys').inspect(this)); return this })
    getter(Object.prototype, '_', function(){ return this.toFunction? this.toFunction() : this })
+   
+   define(Function.prototype, 'calledBy', function(other, seen){ (seen = seen || []).push(this)
+      if (seen.include(this.caller)) return false
+      return !!this.caller && (this.caller === other || this.caller.calledBy(other, seen)) })
    
    /* Debugging
    // ========= */
@@ -683,41 +695,41 @@ $(  new Thing  )
                   return thing.metadata.length === 2 })
 (function(thing){ return thing.metadata[0] instanceof Relation })
 (function(thing){ return thing.metadata[0].to === something })
-(function(thing){ return!thing.metadata[0].responsible })
+(function(thing){ return!thing.metadata[0].isResponsible })
 (function(thing){ return thing.metadata[1] instanceof Relation })
 (function(thing){ return thing.metadata[1].to === something_else })
-(function(thing){ return!thing.metadata[1].responsible })
+(function(thing){ return!thing.metadata[1].isResponsible })
 $(  new Thing  )
 (function(thing){        thing.affix(new Relation(something, true))
                   return thing.metadata.length === 1 })
 .drill('.metadata[0]')
 (function(first){ return first instanceof Relation })
 (function(first){ return first.to === something })
-        ('first',            '.responsible')
+        ('first',            '.isResponsible')
 
 var check =
 $(  new Thing  )
 (function(thing){        thing.affix({foo: something, bar: something_else})
                   return thing.metadata.length === 2 })
 (function(thing){ return thing.metadata[0] instanceof Relation
-                      && thing.metadata[0].responsible })
+                      && thing.metadata[0].isResponsible })
 
 check.drill('.metadata[0].to')
 (function(first){ return first.metadata[1] instanceof Relation
-                      &&!first.metadata[1].responsible
+                      &&!first.metadata[1].isResponsible
                       && first.metadata[1].to instanceof Label
                       && first.metadata[1].to.string === 'foo' })
 (function(first){ return first.metadata[2] instanceof Relation
-                      &&!first.metadata[2].responsible
+                      &&!first.metadata[2].isResponsible
                       && first.metadata[2].to === something })
 
 check.drill('.metadata[1].to')
 (function(second){ return second.metadata[1] instanceof Relation
-                       &&!second.metadata[1].responsible
+                       &&!second.metadata[1].isResponsible
                        && second.metadata[1].to instanceof Label
                        && second.metadata[1].to.string === 'bar' })
 (function(second){ return second.metadata[2] instanceof Relation
-                       &&!second.metadata[2].responsible
+                       &&!second.metadata[2].isResponsible
                        && second.metadata[2].to === something_else })
 
 $(  new Thing({ foo: something, bar: something_else })  )
