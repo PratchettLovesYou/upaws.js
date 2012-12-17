@@ -176,7 +176,7 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
    advance = function(rv) { var juxt, s
       if (this.complete()) return
       if (this.alien)    { this.pristine = false
-                           return this.subs.splice(0, 1)[0] }
+                           return this.subs.splice(0, 1)[0].bind(this) }
       
       if (!this.pristine) {
          if (typeof this.position === 'undefined') { 
@@ -802,11 +802,14 @@ new Check(  new Execution(func1, func2)  )
 (function(alien){ return alien.pristine && !alien.complete() })
 (function(alien){ return alien.subs.length === 2 })
 
-(function(alien){ return alien.advance() === func1 })
+                         // FIXME: I can't figure out how to access the pre-bind() `Function`!
+(function(alien){ return alien.advance(), pending;
+                  return alien.advance() === func1 })
 (function(alien){ return!alien.pristine })
 (function(alien){ return alien.subs.length === 1 })
 
-(function(alien){ return alien.advance() === func2 })
+(function(alien){ return alien.advance(), pending;
+                  return alien.advance() === func2 })
 (function(alien){ return alien.complete() })
 
 var fun        = function(a, b, c){ return new Thing(a, b, c) }
