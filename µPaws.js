@@ -37,11 +37,15 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
       this        .named = true
       this        .toString = function(){ return name }; return this }
    
+   // TODO: Refactor *all* of this crap.
    Thing.prototype.toString = function(){ return this.named? this.name:'' }
-   Thing.prototype.inspect = function(){ var indent = 0
+   Thing.prototype.inspect = function _inspect(){ var indent = 0
       return function $$(it, i, seen, split){ var content, lines, old_seen = seen.slice()
+         if (!it) return ''
          if (!split && seen.indexOf(it) >= 0)
-            return Thing.inspectID(it)+it.toString(); else seen.push(it)
+            return Thing.inspectID(it)+it.toString()+ANSI.brwhite('...'); else seen.push(it)
+         if (it.constructor !== Thing && $$.caller !== _inspect)
+            return it.toString()
          
          if (it.metadata.length === 3
          &&  it.metadata[1] && it.metadata[1].to instanceof Label
@@ -49,9 +53,7 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
                 content = ANSI.cyan(it.metadata[1].to.string+': ')
                         + $$(it.metadata[2].to, ++i, seen)
          else { content = Thing.inspectID(it)+ANSI.brwhite('(')
-                        + it.toArray().map(function(thing){
-            return thing? thing.constructor === Thing?
-               $$(thing, ++i, seen) : thing.toString():'' })
+                        + it.toArray().slice(1).map(function(thing){ return $$(thing, ++i, seen) })
             .join((split?"\n":'')+ANSI.brwhite(', '))+ANSI.brwhite(')')
             
             lines = content.split("\n")
@@ -132,7 +134,7 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
       if (original) // XXX: For now, clones are going to *share* locals.
          it.locals = original.locals
       else {
-         it.locals = new Thing()._name(ANSI.brblack('locals'))
+         it.locals = new Thing().name('locals')
          it       .push({locals: R(it.locals, true)})
          it.locals.push({locals: R(it.locals, true)}) }
       
@@ -170,11 +172,11 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
        + ANSI.brwhite('[') + this.stack.reverse().map(function(e){
             return Thing.prototype.inspect.call(e) })
                .join(ANSI.brwhite(', ')) + ANSI.brwhite(']'))
-     !this.alien && rv.push(ANSI.brblack('position: ')
+     !this.alien && rv.push('position: '
        + (this.position? this.position.inspect()
                        : Expression.prototype.inspect.call({genesis: this.genesis})))
-      this.alien && rv.push(ANSI.brblack('subs: ')+this.subs.length)
-      rv.push(ANSI.brblack('locals:   ')+this.locals.inspect())
+      this.alien && rv.push('subs: '+this.subs.length)
+      rv.push('locals:   '+this.locals.inspect())
       return rv.join("\n") }
    
    Execution.prototype.
@@ -676,13 +678,13 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
    ANSI.reset = ANSI.SGR(00)
    ANSI.bold = ANSI.wrap(1, 22); ANSI.underline = ANSI.wrap(04, 24); ANSI.underline = ANSI.wrap(07, 07)
                                                                                                                   /*|*/ }) // one()
-   if (DEBUG >= 7) // This is about as robust as ... something not-very-robust. lolwhatever.
-   ~function __identifier__(o, seen){ if (seen.indexOf(o) >= 0) return; seen.push(o)
-      Object.getOwnPropertyNames(o).forEach(function(key){
-         try { __identifier__(o[key], seen) } catch(_){}
-         try { if (typeof o[key] == 'function' || o.__proto__ === Object.prototype)
-            o[key].__identifier__ = key } catch(_){} })
-      }(paws, [])
+// if (DEBUG >= 7) // This is about as robust as ... something not-very-robust. lolwhatever.
+// ~function __identifier__(o, seen){ if (seen.indexOf(o) >= 0) return; seen.push(o)
+//    Object.getOwnPropertyNames(o).forEach(function(key){
+//       try { __identifier__(o[key], seen) } catch(_){}
+//       try { if (typeof o[key] == 'function' || o.__proto__ === Object.prototype)
+//          o[key].__identifier__ = key } catch(_){} })
+//    }(paws, [])
    
 
 /* =  - -===-=-== == =-=-= --=- =- =--   =-- =-====-  -==--= =- -   -=-== = --  - =---=-==  -= -= */
