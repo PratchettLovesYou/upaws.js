@@ -153,8 +153,10 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
          world.queue.push(new Staging(caller, that)) }
       
       it.subs[func.length] = Function.apply(null, ['paws', 'world', 'func', 'caller'].concat(
-         Array(func.length + 1).join('_').split(''), "world.queue.push("
-          + "new paws.Staging(caller, func.apply(this, [].slice.call(arguments, 4))))"))
+         Array(func.length + 1).join('_').split(''),                                            "\n"
+          +"var rv = func.apply(this, [].slice.call(arguments, 4))"                            +"\n"
+          +"if (typeof rv !== 'undefined')"                                                    +"\n"
+          +   "world.infrastructure.execution.stage(caller, rv)"))
       .bind(it, paws, world, func)
       
       return it }
