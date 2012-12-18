@@ -631,7 +631,7 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
    I = function I(it) { var a, b, tag
       if (!(it instanceof Thing)) return (it?
          (it.inspect? it.inspect:it.toString).call(it) : ANSI.red('null') )
-      if (log.element && /\n/.test(a = it.inspect()) || ANSI.strip(a).length >= 60) { tag = Thing.inspectID(it)
+      if (log.element && (/\n/.test(a = it.inspect()) || ANSI.strip(a).length >= 60)) { tag = Thing.inspectID(it)
          b = log.element(tag + it.toString()); log.extra(tag, a); return b }
          else return a }
                                                                                         paws.debug =
