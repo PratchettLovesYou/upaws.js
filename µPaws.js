@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 var /* Types: */           Thing, R,Relation, Label, Execution                                                    //|   // Code over here, beyond column 117, is not intended for the consumption of casual readers.
   , /* Parsing: */         cPaws, Expression                                                                      /*|*/;var undefined, u
-  , /* Staging queue: */   Mask, Stage, Staging, metadataReceiver, executionReceiver
+  , /* Staging queue: */   Mask, World, Staging, metadataReceiver, executionReceiver
   , /* Aliens: */          ǁ,infrastructure, parseNum
   , /* Plumbing: */        inherits, construct, define, getter, chainee, noop
   , /* Debugging: */       P,I, D,debug, log, ANSI
@@ -142,20 +142,20 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
    inherits(Thing, Execution)
    Execution.prototype.receiver = /* defined below */                                                             /*|*/ undefined
    
-   Execution.synchronous = function(func){ var it = new Execution(new Function)
+   Execution.synchronous = function(world, func){ var it = new Execution(new Function)
       it.subs = new Array(func.length).join().split(',').map(function(){
          return function(caller, rv){
             this.subs.last = this.subs.last.bind(this, rv)
-            Stage.queue.push(new Staging(caller, this)) } })
+            world.queue.push(new Staging(caller, this)) } })
       
       it.subs.first = function(caller){ var that = this
          that.subs = that.subs.map(function(sub){ return sub.bind(that, caller) })
-         Stage.queue.push(new Staging(caller, that)) }
+         world.queue.push(new Staging(caller, that)) }
       
-      it.subs[func.length] = Function.apply(null, ['paws', 'func', 'caller'].concat(
-         Array(func.length + 1).join('_').split(''), "paws.Stage.queue.push("
-          + "new paws.Staging(caller, func.apply(this, [].slice.call(arguments, 3))))"))
-      .bind(it, paws, func)
+      it.subs[func.length] = Function.apply(null, ['paws', 'world', 'func', 'caller'].concat(
+         Array(func.length + 1).join('_').split(''), "world.queue.push("
+          + "new paws.Staging(caller, func.apply(this, [].slice.call(arguments, 4))))"))
+      .bind(it, paws, world, func)
       
       return it }
       
@@ -276,14 +276,14 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
    
    /* Interpretation
    // ============== */
-   Thing.prototype.receiver = new Execution(function(rv){ var arguments = rv.toArray()
+   Thing.prototype.receiver = new Execution(function(rv, world){ var arguments = rv.toArray()
     , results = arguments[1].lookup(arguments[2])
       if (results[0])
-         Stage.queue.push(new Staging(arguments[0], results[0])) })
+         world.queue.push(new Staging(arguments[0], results[0])) })
    .name('thing×')
    
-   Execution.prototype.receiver = new Execution(function(rv){ var arguments = rv.toArray()
-      Stage.queue.push(new Staging(arguments[1].clone(), arguments[2])) })
+   Execution.prototype.receiver = new Execution(function(rv, world){ var arguments = rv.toArray()
+      world.queue.push(new Staging(arguments[1].clone(), arguments[2])) })
    .name('execution×')
                                                                                          paws.Mask =
    Mask = function(owner, roots){ var it = construct(this)
@@ -306,39 +306,42 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
    // Ascertain if a foreign mask is a subset of this mask
    Mask.prototype.contains = function(far){ if (far === this) return true
       return far.flatten().intersect(this.flatten()).length === 0 }
-                                                                                        paws.Stage =
-   Stage = function(){ var it = construct(this)
+                                                                                        paws.World =
+   World = function(){ var it = construct(this)
       it.occupant = undefined
-      if (!Stage.default) Stage.default = it
+      it.queue = [/* Staging */]
+      it.ownershipTable = { blamees: [/* execution */]
+                          , masks:   [/* Mask */] }
+      
+      it.infrastructure = this.ownBag(paws.infrastructure)
+      
       return it }
    
    // Non-concurrent implementation! Yay! </sarcasm>
-   Stage.current = undefined
-   Stage.default = undefined
+   World.current = undefined
    
-   Stage.queue = [/* Staging */]
-   Stage.queue.next = function(){
+   World.prototype.next = function(){
       // We look for the foremost element of the queue that either:
       // 1. isn’t already staged (inapplicable to this implementation),
       // 2. doesn’t have an associated `requestedMask`,
       // 3. is already responsible for a mask equivalent to the one requested,
       // 4. or whose requested mask doesn’t conflict with any existing ones, excluding its own
-      for (var i = 0; i < Stage.queue.length; ++i) { var it = Stage.queue[i]
+      for (var i = 0; i < this.queue.length; ++i) { var it = this.queue[i]
          alreadyResponsible = function(){
-            return Stage.ownershipTable.masks
-               .filter(function(mask, j){ return Stage.ownershipTable.blamees[j] === it.stagee })
-                 .some(function(mask)   { return mask     .contains(it.requestedMask)          }) }
+            return this.ownershipTable.masks
+               .filter(function(mask, j){ return this.ownershipTable.blamees[j] === it.stagee })
+                 .some(function(mask)   { return mask.contains(it.requestedMask)              }) }
        , requestConflicts = function(){
-            return Stage.ownershipTable.masks
-               .filter(function(mask, j){ return Stage.ownershipTable.blamees[j] !== it.stagee })
-                 .some(function(mask)   { return it.requestedMask.conflictsWith(mask)          }) }
+            return this.ownershipTable.masks
+               .filter(function(mask, j){ return this.ownershipTable.blamees[j] !== it.stagee })
+                 .some(function(mask)   { return it.requestedMask.conflictsWith(mask)         }) }
          
        , canBeStaged = !it.requestedMask
                     ||  alreadyResponsible()
                     || !requestConflicts()
          
          if (canBeStaged)
-            return Stage.queue.splice(i,1)[0] }}
+            return this.queue.splice(i,1)[0] }}
       
                                                                                       paws.Staging =
    Staging = function(stagee, resumptionValue, requestedMask){ var it = construct(this)
@@ -347,73 +350,75 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
       it.requestedMask = requestedMask || undefined
       return it }
    
-   Stage.ownershipTable = { blamees: [/* execution */]
-                          , masks:   [/* Mask */] }
-   Stage.ownershipTable.
-   add = function(requestedMask){
-      this.blamees.push(Stage.current.occupant)
-      this.masks.push(requestedMask) }                                                                            /*|*/ ;Stage.ownershipTable.
-   invalidate = function(execution){ var that = this
-      that.blamees.forEach(function(blamee, i){
+   World.prototype.record = function(requestedMask){
+      this.ownershipTable.blamees.push(this.occupant)
+      this.ownershipTable.masks.push(requestedMask) }
+   World.prototype.invalidate = function(execution){ var table = this.ownershipTable
+      table.blamees.forEach(function(blamee, i){
          if (blamee === execution) {
-            that.blamees.splice(i,1)
-            that.masks  .splice(i,1) } }) }
+            table.blamees.splice(i,1)
+            table.masks  .splice(i,1) } }) }
    
-   Stage.prototype.realize = function(that){ var staging, resumptionValue, $$
-                               that = that || this
+   World.prototype.realize = function(){ var that = this, staging, occupant, resumptionValue, $$
       // Every call to `realize()` will result in *exactly one* execution being staged for
-      // realization. Even if this `Stage` is already realizing, then the requested realization will
+      // realization. Even if this `World` is already realizing, then the requested realization will
       // simply be deferred to the next tick. Thus, three immediate-sequential calls to `realize()`
       // will result in `realize()` executing three times on three subsequent ticks.
-      if (Stage.current)
+      if (World.current)
          return process.nextTick(function(){
-            Stage.current = undefined // FIXME: I have no idea where this infinite loop is from.
+            World.current = undefined // FIXME: I have no idea where this infinite loop is from.
             that.realize() })
-      Stage.current = that
+      World.current = that
       
       if (!(
-         staging = Stage.queue.next() )) return
-      that.occupant = staging.stagee
+         staging = that.next() )) return
+      that.occupant = occupant = staging.stagee
       resumptionValue = staging.resumptionValue
       
       // We’ve already verified the requested mask’s availability, prior to accepting this
       // `Staging`, so no need to re-verify. If it’s defined, then we add it to the table.
-      if (staging.requestedMask) Stage.ownershipTable.add(staging.requestedMask)
+      if (staging.requestedMask) that.record(staging.requestedMask)
       
       ~function(){ var juxt, receiver
          // Finally!
          // First, we handle the special-case of an alien Execution, and immediately return to
          // short-circuit handling of native executions;
-         if (that.occupant.alien) {
-            if (!that.occupant.complete())
-                 that.occupant.advance()   .call(that.occupant, resumptionValue)
+         if (occupant.alien) {
+            if (!occupant.complete())
+                 occupant.advance()   .call(occupant, resumptionValue, that)
             return }
          
          if (!(
-            juxt = that.occupant.advance(resumptionValue) )) return
+            juxt = occupant.advance(resumptionValue) )) return
          receiver = juxt.left.receiver.clone()
          resumptionValue = new Thing
          resumptionValue.push(juxt.context, juxt.left, juxt.right)
          
-         Stage.queue.push(new Staging(receiver, resumptionValue))
+         that.queue.push(new Staging(receiver, resumptionValue))
       }()
       
-      if (that.occupant.complete())
-         Stage.ownershipTable.invalidate(that.occupant)
+      if (occupant.complete())
+         that.invalidate(occupant)
       
-      that.occupant = undefined
-      Stage.current = undefined }
+      delete that.occupant
+      delete World.current }
    
-   Stage.prototype.
-   intervalID = 0
+   World.prototype.intervalID = 0
    
-   Stage.prototype.
+   World.prototype.
    start = function(){
       if (!this.intervalID)
-           this.intervalID = setInterval(this.realize, 50, this) }                                                /*|*/;Stage.prototype.
+           this.intervalID = setInterval(this.realize.bind(this), 50) }                                                /*|*/;World.prototype.
    stop  = function(){
       if ( this.intervalID)
            this.intervalID = clearInterval(this.intervalID) }
+   
+   World.prototype.ownBag = function(bag){ here = this
+      return bag
+        .filter(function(el, key){ return key.charAt(0) != '_' })
+        .map(function $$(el){ switch(typeof el){
+            case 'function': return el.bind(null, here)
+            case 'object':   return el.map($$) }}) }
    
    /* Alien families
    // ============== */                                                        paws.infrastructure =
@@ -422,62 +427,71 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
    //        thus need to charge and discharge things *themselves*, which means they (these aliens)
    //        need to propagate through the staging queue and whatnot. This is going to be complex ...
    // Then again, this is a non-concurrent implementation. Maybe that's fine? (Nope. Chuck Testa.)
-   infrastructure = ǁ = {
-           get: function(thing, number){ return thing.metadata[parseNum(number)].to }
-    ,      set: function(thing, number, e){     thing.metadata[parseNum(number)] = new Relation(e) }
-    ,    affix: function(thing, e){             thing.metadata.push(new Relation(e)) }
-    ,  unaffix: function(thing){         return thing.metadata.pop().to }
-    ,   prefix: function(thing, e){             thing.metadata.unshift(new Relation(e)) }
-    , unprefix: function(thing){         return thing.metadata.shift().to }
-    ,   remove: function(thing, number){ return thing.metadata.splice(parseNum(number), 1)[0].to }
-      
-    , clone: function(thing){ var metadata = thing.metadata
-         thing = new Thing()
-         thing.metadata = metadata.map(function(relation){
-            return new Relation(relation.to, relation.isResponsible) })
-         return thing }
-    , adopt: function(thing, other){ thing.metadata = other.metadata.slice() } // IDFK: Utilizes identical `Relation`ships.
-      // More note on the above: not sure how I’m going to define these semantics eventually, but
-      // for the moment, the only sane way to call these if you don’t want weird behaviour where
-      // changes to the responsibility-cascading grid affect unrelated objects, is to `clone()`
-      // before `adopt()`ing.
-      
-    ,    receiver: function(thing){ return thing.receiver }
-    , setReceiver: function(thing, receiver){
-         if (!receiver || typeof receiver === 'function')
-            receiver = new Execution(receiver)
-         thing.receiver = receiver }
-      
-    ,    charge: function(thing, number){ thing.metadata[parseNum(number)].isResponsible = true }
-    , discharge: function(thing, number){ thing.metadata[parseNum(number)].isResponsible = false }
-      
-    , compare: function(thing1, thing2){ return thing1 === thing2 } // FIXME: Currently a JavaScript boolean. Need Paws booleans.
-      
-    , label: {
-         compare: function(label1, label2){ return label1.string === label2.string }
-       ,   clone: function(label){ return new Label(label.string) } }
-      
+// infrastructure = ǁ = {
+//         get: function(thing, number){ return thing.metadata[parseNum(number)].to }
+//  ,      set: function(thing, number, e){     thing.metadata[parseNum(number)] = new Relation(e) }
+//  ,    affix: function(thing, e){             thing.metadata.push(new Relation(e)) }
+//  ,  unaffix: function(thing){         return thing.metadata.pop().to }
+//  ,   prefix: function(thing, e){             thing.metadata.unshift(new Relation(e)) }
+//  , unprefix: function(thing){         return thing.metadata.shift().to }
+//  ,   remove: function(thing, number){ return thing.metadata.splice(parseNum(number), 1)[0].to }
+//    
+//  , clone: function(thing){ var metadata = thing.metadata
+//       thing = new Thing()
+//       thing.metadata = metadata.map(function(relation){
+//          return new Relation(relation.to, relation.isResponsible) })
+//       return thing }
+//  , adopt: function(thing, other){ thing.metadata = other.metadata.slice() } // IDFK: Utilizes identical `Relation`ships.
+//    // More note on the above: not sure how I’m going to define these semantics eventually, but
+//    // for the moment, the only sane way to call these if you don’t want weird behaviour where
+//    // changes to the responsibility-cascading grid affect unrelated objects, is to `clone()`
+//    // before `adopt()`ing.
+//    
+//  ,    receiver: function(thing){ return thing.receiver }
+//  , setReceiver: function(thing, receiver){
+//       if (!receiver || typeof receiver === 'function')
+//          receiver = new Execution(receiver)
+//       thing.receiver = receiver }
+//    
+//  ,    charge: function(thing, number){ thing.metadata[parseNum(number)].isResponsible = true }
+//  , discharge: function(thing, number){ thing.metadata[parseNum(number)].isResponsible = false }
+//    
+//  , compare: function(thing1, thing2){ return thing1 === thing2 } // FIXME: Currently a JavaScript boolean. Need Paws booleans.
+//    
+//  , label: {
+//       compare: function(label1, label2){ return label1.string === label2.string }
+//     ,   clone: function(label){ return new Label(label.string) } }
+//    
+//  , execution: {
+//       unstage: function(){ /* noop */ }
+//       // TODO: way to determine branch-ship
+//     , stage: function(_, execution, resumptionValue){
+//          Stage.queue.push(new Staging(execution, resumptionValue))
+//       ;( Stage.default ? Stage.default : new Stage() ).realize() }
+//       
+//     , branch: function(execution){ rv(/* NYI */) }
+//       
+//       // FIXME: Not exactly correct semantics, as this doesn't unstage the current execution.
+//     , charge: function(_, execution, thing){
+//          if (_ === execution) {
+//             Stage.queue.push(new Staging(execution, undefined, new Mask(execution, [thing])))
+//          ;( Stage.default ? Stage.default : new Stage() ).realize() }
+//          else {
+//             // FIXME: Needs to verify that the requested mask is a subgraph of the caller's,
+//             //           or ensure the mask is requested next time the execution is staged
+//             Stage.ownershipTable.add(new Mask(execution, [thing])) }}
+//       
+//    }
+// }
+   infrastructure = {
+      get:        function($, thing, number){ return thing.metadata[parseNum(number)].to }
     , execution: {
-         unstage: function(){ /* noop */ }
-         // TODO: way to determine branch-ship
-       , stage: function(_, execution, resumptionValue){
-            Stage.queue.push(new Staging(execution, resumptionValue))
-         ;( Stage.default ? Stage.default : new Stage() ).realize() }
-         
-       , branch: function(execution){ rv(/* NYI */) }
-         
-         // FIXME: Not exactly correct semantics, as this doesn't unstage the current execution.
-       , charge: function(_, execution, thing){
-            if (_ === execution) {
-               Stage.queue.push(new Staging(execution, undefined, new Mask(execution, [thing])))
-            ;( Stage.default ? Stage.default : new Stage() ).realize() }
-            else {
-               // FIXME: Needs to verify that the requested mask is a subgraph of the caller's,
-               //           or ensure the mask is requested next time the execution is staged
-               Stage.ownershipTable.add(new Mask(execution, [thing])) }}
-         
-      }
-   }                                                                                                              /*|*/;paws.utilities = new Object()
+         stage:      function($, execution, resumptionValue){
+            $.queue.push(new Staging(execution, resumptionValue))
+            $.realize()
+            return new Label('') } // FIXME: How can I avoid resulting, here?
+   }}
+                                                                                                                  /*|*/;paws.utilities = new Object()
                                                                            paws.utilities.parseNum =
    parseNum = function(number){
       if (number instanceof Label)     number = parseInt(number.string, 10)
@@ -551,6 +565,19 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
    define(String.prototype, 'toFunction', function(){
       arguments = [].slice.apply(arguments.length? arguments:['it'])
       return global.eval('(function('+arguments.join(', ')+'){ return '+arguments[0]+this+' })') })
+   
+   define(Object.prototype, 'filter', function(cb){ var that = this
+      return Object.getOwnPropertyNames(that).reduce(function(acc, key){
+         if ( cb.call(that, that[key], key, that) )
+            acc[key] = that[key]
+         return acc }, new Object) })
+   define(Object.prototype, 'map',    function(cb){ var that = this
+      return Object.getOwnPropertyNames(that).reduce(function(acc, key){
+         acc[key] = cb.call(that, that[key], key, that)
+         return acc }, new Object) })
+   define(Object.prototype, 'reduce', function(cb, initial){ var that = this
+      return Object.getOwnPropertyNames(that).reduce(function(acc, key){
+         return cb.call(that, acc, that[key], key, that) }, initial) })
    
    getter(Object.prototype, '‽', function(){ console.log(require('sys').inspect(this)); return this })
    getter(Object.prototype, '_', function(){ return this.toFunction? this.toFunction() : this })
