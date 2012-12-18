@@ -423,6 +423,34 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
             case 'function': return el.bind(null, here)
             case 'object':   return el.map($$) }}) }
    
+   // Creates a new `World`, generates a new `Execution` for some given “root-level” code, injects
+   // that root `Execution` with the necessary `infrastructure` globals, and returns a tuple of
+   // [root, globals, world].
+   // 
+   // Of note, the `World` is `start()`'d in the process; if you don't want the generated `World` to
+   // begin executing immediately after the current tick, you can `stop()` it after calling
+   // `generate()`.
+   World.generate = function(root){ var here
+      if (!root || typeof root == 'function' || root.constructor === Expression)
+           root = new Execution(root)
+      
+      here = new World()
+      here.start()
+      
+      root.locals.push({
+         infrastructure: new Thing(
+            here.infrastructure.map(function $$(el, key){ switch(typeof el){
+                  case 'function': return Execution.synchronous(here, el).name(key)
+                  case 'object':   return new Thing(el.map($$)).responsible }}) )
+            .name('infrastructure')
+       , implementation: new Thing(
+            here.implementation.map(function $$(el, key){ switch(typeof el){
+                  case 'function': return Execution.synchronous(here, el).name(key)
+                  case 'object':   return new Thing(el.map($$)).responsible }}) )
+            .name('implementation')                                                               })
+      
+      return [root.name('root'), here] }
+   
    /* Alien families
    // ============== */                                                        paws.infrastructure =
    // FIXME: Much of the code here is a lie. This is a direct, on-the-stack JavaScript
@@ -656,4 +684,15 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
             o[key].__identifier__ = key } catch(_){} })
       }(paws, [])
    
+
+/* =  - -===-=-== == =-=-= --=- =- =--   =-- =-====-  -==--= =- -   -=-== = --  - =---=-==  -= -= */
+if (require.main === module)
+~function(){ var _ =
+   World.generate( cPaws.parse(process.argv[2]) )
+ , root = _[0], here = _[1]
+   
+   ;debugger;
+   here.infrastructure.execution.stage(root, null)
+}()
+
 if(module)module.exports=paws
