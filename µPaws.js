@@ -2,7 +2,7 @@
 var /* Types: */           Thing, R,Relation, Label, Execution                                                    //|   // Code over here, beyond column 117, is not intended for the consumption of casual readers.
   , /* Parsing: */         cPaws, Expression                                                                      /*|*/;var undefined, u
   , /* Staging queue: */   Mask, World, Staging, metadataReceiver, executionReceiver
-  , /* Aliens: */          ǁ,infrastructure, parseNum
+  , /* Aliens: */          ǁ,infrastructure, implementation, parseNum
   , /* Plumbing: */        inherits, construct, define, getter, chainee, noop
   , /* Debugging: */       P,I, D,debug, log, ANSI
    
@@ -316,6 +316,7 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
                           , masks:   [/* Mask */] }
       
       it.infrastructure = this.ownBag(paws.infrastructure)
+      it.implementation = this.ownBag(paws.implementation)
       
       return it }
    
@@ -493,6 +494,12 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
             $.realize()
             return new Label('') } // FIXME: How can I avoid resulting, here?
    }}
+                                                                               paws.implementation =
+   implementation = {
+      util: {
+         test:    function($) { console.log('test successful!') }
+       , print:   function($, label){ console.log(label.string) }                                   }}
+   
                                                                                                                   /*|*/;paws.utilities = new Object()
                                                                            paws.utilities.parseNum =
    parseNum = function(number){
