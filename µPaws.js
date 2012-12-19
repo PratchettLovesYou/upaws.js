@@ -135,8 +135,8 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
          it.locals = original.locals
       else {
          it.locals = new Thing().name('locals')
-         it       .push({locals: R(it.locals, true)})
          it.locals.push({locals: R(it.locals, true)}) }
+         it       .push({locals: R(it.locals, true)})
       
       if (original && original.hasOwnProperty('name'))
          it.name = original.name + '′'
@@ -154,11 +154,15 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
          that.subs = that.subs.map(function(sub){ return sub.bind(that, caller) })
          world.queue.push(new Staging(caller, that)) }
       
+      // FIXME: *This* successfully doesn't-result from synchronous functions that *don't* return a
+      //        non-undefined value; but it is still incorrectly implemented, in that it still
+      //        coconsumes a `caller` argument. There's no way to know ahead-of-time whether a
+      //        `Function` will return or not, so we'll have to make this mechanism explicit.
       it.subs[func.length] = Function.apply(null, ['paws', 'world', 'func', 'caller'].concat(
          Array(func.length + 1).join('_').split(''),                                            "\n"
           +"var rv = func.apply(this, [].slice.call(arguments, 4))"                            +"\n"
           +"if (typeof rv !== 'undefined')"                                                    +"\n"
-          +   "world.infrastructure.execution.stage(caller, rv)"))
+          +"   return world.infrastructure.execution.stage(caller, rv)"))
       .bind(it, paws, world, func)
       
       return it }
