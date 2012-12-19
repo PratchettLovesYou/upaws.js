@@ -688,13 +688,16 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
    
 
 /* =  - -===-=-== == =-=-= --=- =- =--   =-- =-====-  -==--= =- -   -=-== = --  - =---=-==  -= -= */
-if (require.main === module)
-~function(){ var _ =
-   World.generate( cPaws.parse(process.argv[2]) )
+if (require.main === module) switch (process.argv[2]) {
+
+case '-e':
+case '-f':
+~function(){ var _=
+   World.generate(cPaws.parse( process.argv[2] === '-e'? process.argv[3]
+    : require('fs').readFileSync(process.argv[2], 'utf8').replace(/^#!.*\n/, '') ))
  , root = _[0], here = _[1]
    
-   ;debugger;
    here.infrastructure.execution.stage(root, null)
 }()
-
+                                                                                                   }
 if(module)module.exports=paws
