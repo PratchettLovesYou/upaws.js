@@ -53,7 +53,7 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
                 content = ANSI.cyan(it.metadata[1].to.string+': ')
                         + $$(it.metadata[2].to, ++i, seen)
          else { content = Thing.inspectID(it)+ANSI.brwhite('(')
-                        + it.toArray().slice(1).map(function(thing){ return $$(thing, ++i, seen) })
+                        + it.toArray().map(function(thing){ return $$(thing, ++i, seen) })
             .join((split?"\n":'')+ANSI.brwhite(', '))+ANSI.brwhite(')')
             
             lines = content.split("\n")
@@ -169,8 +169,7 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
     : ANSI.brmagenta(this.named? '`'+this.name+'`' : '`anon`') }
    Execution.prototype.inspect = function() { var rv = new Array
      !this.alien && this.stack.length > 0 && rv.push(ANSI.brblack('stack:    ')
-       + ANSI.brwhite('[') + this.stack.reverse().map(function(e){
-            return Thing.prototype.inspect.call(e) })
+       + ANSI.brwhite('[') + this.stack.map('.value'._).reverse().map('.toString()'._)
                .join(ANSI.brwhite(', ')) + ANSI.brwhite(']'))
      !this.alien && rv.push('position: '
        + (this.position? this.position.inspect()
