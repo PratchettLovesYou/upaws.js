@@ -520,9 +520,15 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
 //    }
 // }
    infrastructure = {
-      get:        function($, thing, number){ return thing.metadata[parseNum(number)].to }
+      get:        function($,thing, num){ return thing.metadata[parseNum(num)].to }
+    , set:        function($,thing, num, it){    thing.metadata[parseNum(num)] = Relation(it) }
+    , cut:        function($,thing, num){ return thing.metadata.splice(parseNum(num), 1)[0].to }
+    , affix:      function($,thing, it){;debugger;        thing.metadata.push(Relation(it)) }
+    , unaffix:    function($,thing){     ;debugger; return thing.metadata.pop().to }
+    , prefix:     function($,thing, it){        thing.metadata.unshift(Relation(it)) }
+    , unprefix:   function($,thing){      return thing.metadata.shift().to }
     , execution: {
-         stage:      function($, execution, resumptionValue){
+         stage:      function($,execution, resumptionValue){
             $.queue.push(new Staging(execution, resumptionValue))
             $.realize()
             return new Label('') } // FIXME: How can I avoid resulting, here?
@@ -531,7 +537,7 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
    implementation = {
       util: {
          test:    function($) { console.log('test successful!') }
-       , print:   function($, label){ console.log(label.string) }                                   }}
+       , print:   function($,label){;debugger;console.log(label.string) }                                   }}
    
                                                                                                                   /*|*/;paws.utilities = new Object()
                                                                            paws.utilities.parseNum =
