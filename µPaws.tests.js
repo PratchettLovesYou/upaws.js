@@ -206,11 +206,13 @@ new Check(  new Execution(func1, func2)  )
                   return alien.advance() === func2 })
 (function(alien){ return alien.complete() })
 
-var fun        = function(a, b, c){ return new Thing(a, b, c) }
+;debugger;
+var earth      = new World
+  , fun        = function(a, b, c){ return new Thing(a, b, c) }
   , caller     = new Execution(new Function)
   , parameters = {one: new Thing, two: new Thing, three: new Thing}
   , sub1, sub2
-new Check(  new Execution.synchronous(fun)  )
+new Check(  new Execution.synchronous(earth, fun)  )
 (function(synch){ return synch.subs.length == 4 })
 (function(synch){ return synch.subs.last.length == 4 })
 (function(synch){        synch.advance()(caller)
@@ -223,7 +225,7 @@ new Check(  new Execution.synchronous(fun)  )
                   return synch.subs.length == 1
                       && synch.subs.last.length == 1 })
 (function(synch){        synch.advance()(parameters.three)
-                     var staging = Stage.queue.pop()
+                     var staging = earth.queue.pop()
                   return synch.subs.length == 0
                       && staging.stagee === caller
                       && staging.resumptionValue && staging.resumptionValue.toArray()
