@@ -248,7 +248,7 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
       while (pos.next) pos = pos.next
       pos.next = next }
                                                                                                                   /*|*/ paws.cPaws = cPaws = new Object()
-   cPaws.labelCharacters = /[^(){} ]/ // Not currently supporting quote-delimited labels
+   cPaws.labelCharacters = /[^(){} \n]/ // Not currently supporting quote-delimited labels
    
    cPaws.
    parse = function(text){ var i = 0
@@ -259,7 +259,7 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
          return result }
       
     , character = function(c){ return text[i] === c && ++i }
-    , whitespace = function(){ while (character(' ')); return true }
+    , whitespace = function(){ while (character(' ')||character("\n")); return true }
     , braces = function(chars, constructor) {
          return function(){ var a = i, $
             if (whitespace() && character(chars[0]) && ($ = expr()) && whitespace() && character(chars[1]))
@@ -424,9 +424,11 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
    World.prototype.ownBag = function(bag){ here = this
       return bag
         .filter(function(el, key){ return key.charAt(0) != '_' })
-        .map(function $$(el){ switch(typeof el){
-            case 'function': return el.bind(null, here)
-            case 'object':   return el.map($$) }}) }
+        .map(function $$(el){ if (el) switch(el.constructor){
+            case Function: return el.bind(null, here)
+            case Thing: case Label: case Execution:
+               case Relation: return el
+            case Object:   return el.map($$) }}) }
    
    // Creates a new `World`, generates a new `Execution` for some given “root-level” code, injects
    // that root `Execution` with the necessary `infrastructure` globals, and returns a tuple of
@@ -442,17 +444,14 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
       here = new World()
       here.start()
       
+      function $$(el, key){ if (el) switch(el.constructor){
+         case Function: return Execution.synchronous(here, el).name(key)
+         case Thing: case Label: case Execution:
+            case Relation: return el.name(key).irresponsible
+         case Object:   return new Thing(el.map($$)).responsible }} 
       root.locals.push({
-         infrastructure: new Thing(
-            here.infrastructure.map(function $$(el, key){ switch(typeof el){
-                  case 'function': return Execution.synchronous(here, el).name(key)
-                  case 'object':   return new Thing(el.map($$)).responsible }}) )
-            .name('infrastructure')
-       , implementation: new Thing(
-            here.implementation.map(function $$(el, key){ switch(typeof el){
-                  case 'function': return Execution.synchronous(here, el).name(key)
-                  case 'object':   return new Thing(el.map($$)).responsible }}) )
-            .name('implementation')                                                               })
+         infrastructure: new Thing( here.infrastructure.map($$) ).name('infrastructure')
+       , implementation: new Thing( here.implementation.map($$) ).name('implementation')          })
       
       return [root.name('root'), here] }
    
@@ -535,7 +534,9 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
    }}
                                                                                paws.implementation =
    implementation = {
-      util: {
+      void: Execution(function(caller, here){ return function void_(){
+         return here.infrastructure.execution.stage(caller, Execution(void_)) }() })
+    , util: {
          test:    function($) { console.log('test successful!') }
        , print:   function($,label){;debugger;console.log(label.string) }                                   }}
    
