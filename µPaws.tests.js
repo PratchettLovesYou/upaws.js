@@ -5,7 +5,7 @@
 //     node =(cat µPaws{,.tests}.js)
 
 if (require.main === module)
-~function(){ var testing = new Object, Battery, $,Check, pending
+~function(){ var testing = new Object, Battery, $,Check, pending, broken
    /* Testing-related plumbing
    // ======================== */
    // The following constructs a stupid little testing ‘framework,’ if one can even glorify it with
@@ -45,7 +45,8 @@ if (require.main === module)
       return new Check(to.bind(null, this.target)) }
    
    Check.pristine = [0,0,0]                                                               ;pending =
-   Check.pending = 'pending'
+   Check.pending = 'pending'                                                               ;broken =
+   Check.broken  = 'broken'
    
    Check.prototype.
    execute = function(n, expectation){ var it = this
@@ -53,10 +54,13 @@ if (require.main === module)
           it.target = it.target.call()
       return (expectation? [expectation] : it.expectations).reduce(function(acc, expectation){ var
          result = expectation.call(it.target, it.target)
-         testing.log(n, ANSI[result === Check.pending? 'yellow' : result? 'green' : 'red']
+         testing.log(n, ANSI[result === Check.pending? 'yellow'
+                           : result === Check.broken?  'brred'
+                                             : result? 'green' : 'red']
                            (' '+expectation.toString().replace('function ','      ->')) )
          return testing.addStats(
             result === Check.pending? [0,1,0]
+          : result === Check.broken?  [0,0,1]
           : result?                   [1,0,0]
           :                           [0,0,1]
           , acc) }, Check.pristine) }
@@ -206,7 +210,6 @@ new Check(  new Execution(func1, func2)  )
                   return alien.advance() === func2 })
 (function(alien){ return alien.complete() })
 
-;debugger;
 var earth      = new World
   , fun        = function(a, b, c){ return new Thing(a, b, c) }
   , caller     = new Execution(new Function)
