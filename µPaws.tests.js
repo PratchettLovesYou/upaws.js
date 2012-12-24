@@ -294,10 +294,28 @@ new Check(  a_native  )
 (function(native){ var juxt = native.advance(arbitrary_thing)
          return typeof juxt.left === 'undefined'
                     && juxt.right === arbitrary_thing })
-(function(native){ return  native.complete() })
 (function(native){ return typeof native.advance() === 'undefined' })
 }()
 
+
+})
+/* Plumbing tests
+// ============== */
+new Battery(function(){
+
+var
+c = new Check(  ['one', 'two', 'three'].zip([1, 2], 'abcd'.split(''))  )
+c.drill('[0]')('a',"[0] === 'one'   && a[1] === 1 && a[2] === 'a'")
+c.drill('[1]')('b',"[0] === 'two'   && b[1] === 2 && b[2] === 'b'")
+c.drill('[2]')('c',"[0] === 'three' && typeof c[1] === 'undefined' && c[2] === 'c'")
+
+new Check(  'abcd'.split('').zip('1234'.split('')
+          , function(letter, number){ return letter + number })  )
+('it',".join('') === 'a1b2c3d4'")
+
+new Check(  ['one', 2, 'c']  )
+(function(arr){ return arr.equals(['one', 2, 'c']) })
+(function(arr){ return!arr.equals(['one', 3, 'c']) })
 
 })
 

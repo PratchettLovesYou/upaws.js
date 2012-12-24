@@ -611,6 +611,16 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
    define(Array.prototype, 'lastThat', function(_){ var rv
       return this.slice(0).reverse().some(function(element){ return _(rv = element) }) ? rv : null })
    
+   define(Array.prototype, 'zip', function(cb){ var that = this
+    , arrays = [].slice.apply(arguments)
+      cb = typeof arrays.last == 'function'? arrays.pop()
+         : function(){ return [].slice.apply(arguments) }
+      arrays.unshift(this)
+      return this.map(function(_, i){ return cb.apply(that
+       , arrays.map(function(array){ return array[i] })) }) })
+   define(Array.prototype, 'equals', function(other){
+      return this.zip(other, function(a, b){ return a === b }).every(noop) })
+   
    define(String.prototype, 'toFunction', function(){
       arguments = [].slice.apply(arguments.length? arguments:['it'])
       return global.eval('(function('+arguments.join(', ')+'){ return '+arguments[0]+this+' })') })
