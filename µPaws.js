@@ -103,7 +103,7 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
    Thing.prototype.compare = function(right){ return this === right }
    
    Thing.prototype.find = function(key){
-      return this.metadata.reverse().map(function(rel){
+      return this.metadata.slice().reverse().map(function(rel){
          return rel && rel.to instanceof Thing
              && rel.to.metadata[1] && rel.to.metadata[2]
              && rel.to.metadata[1].to.compare(key)?
