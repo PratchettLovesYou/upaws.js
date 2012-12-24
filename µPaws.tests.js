@@ -133,11 +133,11 @@ check.drill('.metadata[1].to')
                        && second.metadata[2].to === something_else })
 
 $(  new Thing({ foo: something, bar: something_else })  )
-(function(person){ return person.lookup(new Label('foo'))[0] === something })
-(function(person){ return person.lookup(new Label('bar'))[0] === something_else })
+(function(person){ return person.find(new Label('foo'))[0] === something })
+(function(person){ return person.find(new Label('bar'))[0] === something_else })
 
 $(  new Thing(new Thing(something, something_else))  )
-(function(thing){ return thing.lookup(something)[0] === something_else })
+(function(thing){ return thing.find(something)[0] === something_else })
 
 })
 /* Parsing tests

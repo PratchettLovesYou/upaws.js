@@ -102,7 +102,7 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
    
    Thing.prototype.compare = function(right){ return this === right }
    
-   Thing.prototype.lookup = function(key){
+   Thing.prototype.find = function(key){
       return this.metadata.reverse().map(function(rel){
          return rel && rel.to instanceof Thing
              && rel.to.metadata[1] && rel.to.metadata[2]
@@ -284,7 +284,7 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
    /* Interpretation
    // ============== */
    Thing.prototype.receiver = new Execution(function(rv, world){ var arguments = rv.toArray()
-    , results = arguments[1].lookup(arguments[2])
+    , results = arguments[1].find(arguments[2])
       if (results[0])
          world.queue.push(new Staging(arguments[0], results[0])) })
    .name('thing×')
@@ -520,6 +520,7 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
 // }
    infrastructure = {
       get:        function($,thing, num){ return thing.metadata[parseNum(num)].to }
+//  , find:       function($,thing, key){ return thing.find(key)[0] }
     , set:        function($,thing, num, it){    thing.metadata[parseNum(num)] = Relation(it) }
     , cut:        function($,thing, num){ return thing.metadata.splice(parseNum(num), 1)[0].to }
     , affix:      function($,thing, it){;debugger;        thing.metadata.push(Relation(it)) }
