@@ -645,6 +645,23 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
       if (seen.include(this.caller)) return false
       return !!this.caller && (this.caller === other || this.caller.calledBy(other, seen)) })
    
+   // Would prefer to use an actual Function-subclass a lá `from`, so that I don't have to manually
+   // attach a .toString() to each instance; but this will do for the moment.
+   // FIXME: Will currently error out if you curry in more arguments than the function needs
+   define(Function.prototype, 'curry', function(){ var that = this
+    ,   curried = [].slice.call(arguments)
+    , uncurried = Array(++that.length - curried.length).join('_').split('')
+      
+    , eval = GLOBAL.eval // Must be referenced as `eval` <http://es5.github.com/#x15.1.2.1.1>
+    , result = eval("(function("+uncurried.join(', ')+"){"
+       +"return that.apply(typeof bound === 'object'"                                         +"\n"
+       +"               || typeof bound === 'function'? bound:this"                           +"\n"
+       +"                   , curried.concat([].slice.call(arguments))) })"                   +"\n")
+      
+      result.toString = that.toString.bind(that)
+      result.final = that.final || that
+      return result })
+   
    /* Debugging
    // ========= */
    P = function P(it) {return (log.element||noop).call(log,

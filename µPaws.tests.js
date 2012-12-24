@@ -82,6 +82,7 @@ new Battery(function(){
 /* Datatype tests
 // ============== */
 new Battery(function(){
+
 $(  new Thing  )
 ('empty','.id > 0')
 ('empty','.metadata.length === 0')
@@ -316,6 +317,44 @@ new Check(  'abcd'.split('').zip('1234'.split('')
 new Check(  ['one', 2, 'c']  )
 (function(arr){ return arr.equals(['one', 2, 'c']) })
 (function(arr){ return!arr.equals(['one', 3, 'c']) })
+
+~function(){
+var a_function = function(a,b,c,d,e,f,g,h){
+   return {this: this, arguments: [].slice.call(arguments)} }
+  , something = new Object
+  , arb1 = new Object
+  , arb2 = new Object
+
+  , first = a_function.curry('one', 'two', 'three')
+new Check(  first  )
+                      ('curried','.length == 5')
+(function(curried){ return typeof curried === 'function' })
+(function(curried){ return curried.final      === a_function })
+(function(curried){ return curried.toString() === a_function.toString() })
+(function(curried){ var res = curried('four', 'five')
+                 return res.arguments.equals(['one', 'two', 'three', 'four', 'five'])
+                     && res.this === GLOBAL })
+
+var bound1 = first.bind(arb1)
+new Check(  bound1  )
+(function(bound){ var res = bound('four', 'five')
+               return res.this === arb1 })
+
+// FIXME: Should bound-functions through curry() maintain the toString() and final?
+var second = bound1.curry(something)
+new Check(  second  )
+(function(curried){ return typeof curried === 'function' })
+(function(curried){ return curried.final      === bound1 })
+(function(curried){ return curried.toString() === bound1.toString() })
+(function(curried){ var res = curried(4, 5); debugger;
+                 return res.arguments.equals(['one', 'two', 'three', something, 4, 5])
+                     && res.this === arb1 })
+
+var bound2 = second.bind(arb2)
+new Check(  bound2  )
+(function(bound){ var res = bound('four', 'five')
+               return res.this === arb1 })
+}()
 
 })
 
