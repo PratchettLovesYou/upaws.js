@@ -523,9 +523,9 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
 //  , find:       function($,thing, key){ return thing.find(key)[0] }
     , set:        function($,thing, num, it){    thing.metadata[parseNum(num)] = Relation(it) }
     , cut:        function($,thing, num){ return thing.metadata.splice(parseNum(num), 1)[0].to }
-    , affix:      function($,thing, it){;debugger;        thing.metadata.push(Relation(it)) }
-    , unaffix:    function($,thing){     ;debugger; return thing.metadata.pop().to }
-    , prefix:     function($,thing, it){        thing.metadata.unshift(Relation(it)) }
+    , affix:      function($,thing, it){         thing.metadata.push(Relation(it)) }
+    , unaffix:    function($,thing){      return thing.metadata.pop().to }
+    , prefix:     function($,thing, it){         thing.metadata.unshift(Relation(it)) }
     , unprefix:   function($,thing){      return thing.metadata.shift().to }
     , execution: {
          stage:      function($,execution, resumptionValue){
