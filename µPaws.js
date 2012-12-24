@@ -731,7 +731,7 @@ case '-e':
 case '-f':
 ~function(){ var _=
    World.generate(cPaws.parse( process.argv[2] === '-e'? process.argv[3]
-    : require('fs').readFileSync(process.argv[2], 'utf8').replace(/^#!.*\n/, '') ))
+    : require('fs').readFileSync(process.argv[3], 'utf8').replace(/^#!.*\n/, '') ))
  , root = _[0], here = _[1]
    
    here.infrastructure.execution.stage(root, null)
