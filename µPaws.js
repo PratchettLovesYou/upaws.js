@@ -147,11 +147,11 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
    Execution.synchronous = function(world, func){ var it = new Execution(new Function)
       it.subs = new Array(func.length).join().split(',').map(function(){
          return function(caller, rv){
-            this.subs.last = this.subs.last.bind(this, rv)
+            this.subs.last = this.subs.last.curry(rv)
             world.queue.push(new Staging(caller, this)) } })
       
       it.subs.first = function(caller){ var that = this
-         that.subs = that.subs.map(function(sub){ return sub.bind(that, caller) })
+         that.subs = that.subs.map(function(sub){ return sub.curry(caller) })
          world.queue.push(new Staging(caller, that)) }
       
       // FIXME: *This* successfully doesn't-result from synchronous functions that *don't* return a
@@ -163,7 +163,7 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
           +"var rv = func.apply(this, [].slice.call(arguments, 4))"                            +"\n"
           +"if (typeof rv !== 'undefined')"                                                    +"\n"
           +"   return world.infrastructure.execution.stage(caller, rv)"))
-      .bind(it, paws, world, func)
+      .curry(paws, world, func)
       
       return it }
       
@@ -425,7 +425,7 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
       return bag
         .filter(function(el, key){ return key.charAt(0) != '_' })
         .map(function $$(el){ if (el) switch(el.constructor){
-            case Function: return el.bind(null, here)
+            case Function: return el.curry(here)
             case Thing: case Label: case Execution:
                case Relation: return el
             case Object:   return el.map($$) }}) }
@@ -539,7 +539,7 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
          return here.infrastructure.execution.stage(caller, Execution(void_)) }() })
     , util: {
          test:    function($) { console.log('test successful!') }
-       , print:   function($,label){;debugger;console.log(label.string) }                                   }}
+       , print:   function($,label){ console.log(label.string) }                                   }}
    
                                                                                                                   /*|*/;paws.utilities = new Object()
                                                                            paws.utilities.parseNum =

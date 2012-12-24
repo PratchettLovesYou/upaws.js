@@ -232,8 +232,9 @@ new Check(  new Execution.synchronous(earth, fun)  )
                      var staging = earth.queue.pop()
                   return synch.subs.length == 0
                       && staging.stagee === caller
-                      && staging.resumptionValue && staging.resumptionValue.toArray()
-                        .intersect([parameters.one, parameters.two, parameters.three]).empty })
+                      && staging.resumptionValue
+                      && staging.resumptionValue.toArray()
+                        .equals([u,parameters.one, parameters.two, parameters.three]) })
 
 new Check(  new Execution(cPaws.parse(''))  )
 (function(native){ return pending; return  native.pristine })
