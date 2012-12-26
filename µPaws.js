@@ -148,11 +148,13 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
       it.subs = new Array(func.length).join().split(',').map(function(){
          return function(caller, rv){
             this.subs.last = this.subs.last.curry(rv)
-            here.queue.push(new Staging(caller, this)) } })
+            here.queue.push(new Staging(caller, this))
+            here.realize() } })
       
       it.subs.first = function(caller){ var that = this
          that.subs = that.subs.map(function(sub){ return sub.curry(caller) })
-         here.queue.push(new Staging(caller, that)) }
+         here.queue.push(new Staging(caller, that))
+         here.realize() }
       
       // FIXME: *This* successfully doesn't-result from synchronous functions that *don't* return a
       //        non-undefined value; but it is still incorrectly implemented, in that it still
@@ -285,11 +287,14 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
    // ============== */
    Thing.prototype.receiver = new Execution(function(rv, $){ var arguments = rv.toArray()
     , results = arguments[1].find(arguments[2])
-         $.queue.push(new Staging(arguments[0], results[0])) })
+      if (results[0]) {
+         $.queue.push(new Staging(arguments[0], results[0]))
+         $.realize() } })
    .name('thing×')
    
    Execution.prototype.receiver = new Execution(function(rv, $){ var arguments = rv.toArray()
-      $.queue.push(new Staging(arguments[1].clone(), arguments[2])) })
+      $.queue.push(new Staging(arguments[1].clone(), arguments[2]))
+      $.realize() })
    .name('execution×')
                                                                                          paws.Mask =
    Mask = function(owner, roots){ var it = construct(this)
@@ -326,6 +331,7 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
    
    // Non-concurrent implementation! Yay! </sarcasm>
    World.current = undefined
+   World.prototype.count = 0
    
    World.prototype.next = function(){
       // We look for the foremost element of the queue that either:
@@ -357,65 +363,60 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
       it.requestedMask = requestedMask || undefined
       return it }
    
-   World.prototype.record = function(requestedMask){
+   World.prototype.record = function(requestedMask){ if (requestedMask) {
       this.ownershipTable.blamees.push(this.occupant)
-      this.ownershipTable.masks.push(requestedMask) }
+      this.ownershipTable.masks.push(requestedMask) }}
    World.prototype.invalidate = function(execution){ var table = this.ownershipTable
       table.blamees.forEach(function(blamee, i){
          if (blamee === execution) {
             table.blamees.splice(i,1)
             table.masks  .splice(i,1) } }) }
    
-   World.prototype.realize = function(){ var that = this, staging, occupant, resumptionValue, $$
-      // Every call to `realize()` will result in *exactly one* execution being staged for
-      // realization. Even if this `World` is already realizing, then the requested realization will
-      // simply be deferred to the next tick. Thus, three immediate-sequential calls to `realize()`
-      // will result in `realize()` executing three times on three subsequent ticks.
-      if (World.current)
-         return process.nextTick(function(){
-            World.current = undefined // FIXME: I have no idea where this infinite loop is from.
-            that.realize() })
-      World.current = that
+   World.prototype.realize = function(){ var here = this, st, jx, rv, receiver
+      ++here.count
       
-      if (!(
-         staging = that.next() )) return
-      that.occupant = occupant = staging.stagee
-      resumptionValue = staging.resumptionValue
+      ;debugger;
+      if (World.current) return
+          World.current = here
       
-      // We’ve already verified the requested mask’s availability, prior to accepting this
-      // `Staging`, so no need to re-verify. If it’s defined, then we add it to the table.
-      if (staging.requestedMask) that.record(staging.requestedMask)
+      do (function(){
       
-      ~function(){ var juxt, receiver
-         // Finally!
-         // First, we handle the special-case of an alien Execution, and immediately return to
-         // short-circuit handling of native executions;
-         if (occupant.alien) {
-            if (!occupant.complete())
-                 occupant.advance()   .call(occupant, resumptionValue, that)
-            return }
+         if (!( st = here.next()         )) return
+         if (        st.stagee.complete() ) return
+         if (!( jx = st.stagee.advance(st.resumptionValue) )) return
          
-         if (!(
-            juxt = occupant.advance(resumptionValue) )) return
-         receiver = juxt.left.receiver.clone()
-         resumptionValue = new Thing
-         resumptionValue.push(juxt.context, juxt.left, juxt.right)
+         debug(7, '>> ')(new Error().stack.split("\n").length-2+'/'+here.count
+                       , 'stagee: '+I(st.stagee)
+                       , 'resumptionValue: '+I(st.resumptionValue))
          
-         that.queue.push(new Staging(receiver, resumptionValue))
-      }()
+         here.occupant = st.stagee
+         here.record(st.requestedMask)
+         
+         if (st.stagee.alien)
+            return jx.call(st.stagee, st.resumptionValue, here)
+         
+         rv = new Thing; rv.push(jx.context, jx.left, jx.right)
+         here.queue.push(new Staging(jx.left.receiver.clone(), rv))
+         ++here.count
+         
+         if (st.stagee.complete())
+            here.invalidate(st.stagee)
+         
+      }())
+      while (--here.count)
       
-      if (occupant.complete())
-         that.invalidate(occupant)
-      
-      delete that.occupant
+      delete here.occupant
       delete World.current }
+         
    
    World.prototype.intervalID = 0
+   World.prototype.interval = 50
    
    World.prototype.
    start = function(){
       if (!this.intervalID)
-           this.intervalID = setInterval(this.realize.bind(this), 50) }                                                /*|*/;World.prototype.
+           this.intervalID = setInterval(this.realize.bind(this)
+                                       , World.prototype.interval) }                                              /*|*/;World.prototype.
    stop  = function(){
       if ( this.intervalID)
            this.intervalID = clearInterval(this.intervalID) }
