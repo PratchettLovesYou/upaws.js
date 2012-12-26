@@ -332,7 +332,7 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
    World.current = undefined
    World.prototype.count = 0
    
-   World.prototype.next = function(){
+   World.prototype.next = function(){ var table = this.ownershipTable
       // We look for the foremost element of the queue that either:
       // 1. isn’t already staged (inapplicable to this implementation),
       // 2. doesn’t have an associated `requestedMask`,
@@ -340,12 +340,12 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
       // 4. or whose requested mask doesn’t conflict with any existing ones, excluding its own
       for (var i = 0; i < this.queue.length; ++i) { var it = this.queue[i]
          alreadyResponsible = function(){
-            return this.ownershipTable.masks
-               .filter(function(mask, j){ return this.ownershipTable.blamees[j] === it.stagee })
+            return table.masks
+               .filter(function(mask, j){ return table.blamees[j] === it.stagee })
                  .some(function(mask)   { return mask.contains(it.requestedMask)              }) }
        , requestConflicts = function(){
-            return this.ownershipTable.masks
-               .filter(function(mask, j){ return this.ownershipTable.blamees[j] !== it.stagee })
+            return table.masks
+               .filter(function(mask, j){ return table.blamees[j] !== it.stagee })
                  .some(function(mask)   { return it.requestedMask.conflictsWith(mask)         }) }
          
        , canBeStaged = !it.requestedMask
@@ -374,7 +374,6 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
    World.prototype.realize = function(){ var here = this, st, jx, rv, receiver
       ++here.count
       
-      ;debugger;
       if (World.current) return
           World.current = here
       
