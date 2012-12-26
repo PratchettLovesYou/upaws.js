@@ -11,7 +11,6 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
   , DEBUG = DEBUG === 0? 0:(DEBUG || 6)
    
   , fs   = require('fs')
-  , path = require('path')
   , util = require('util')
    
   , paws = new Object()                                                                                           /*|*/;~function $(l,n){ l(function(i){n=i}); if(n)$(n) }
@@ -430,30 +429,16 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
                case Relation: return el
             case Object:   return el.map($$) }}) }
    
-   // Creates a new `World`, generates a new `Execution` for some given “root-level” code, injects
-   // that root `Execution` with the necessary `infrastructure` globals, and returns a tuple of
-   // [root, globals, world].
-   // 
-   // Of note, the `World` is `start()`'d in the process; if you don't want the generated `World` to
-   // begin executing immediately after the current tick, you can `stop()` it after calling
-   // `generate()`.
-   World.generate = function(root){ var here
-      if (!root || typeof root == 'function' || root.constructor === Expression)
-           root = new Execution(root)
-      
-      here = new World()
-      here.start()
-      
+   World.prototype.applyGlobals = function(root){ var here = this
       function $$(el, key){ if (el) switch(el.constructor){
          case Function: return Execution.synchronous(here, el).name(key)
-         case Thing: case Label: case Execution:
-            case Relation: return el.name(key).irresponsible
+         case Label: case Execution:
+            case Thing: return (el.named? el : el.name(key)).irresponsible
+         case Relation: return el
          case Object:   return new Thing(el.map($$)).responsible }} 
       root.locals.push({
          infrastructure: new Thing( here.infrastructure.map($$) ).name('infrastructure')
-       , implementation: new Thing( here.implementation.map($$) ).name('implementation')          })
-      
-      return [root.name('root'), here] }
+       , implementation: new Thing( here.implementation.map($$) ).name('implementation')          }) }
    
    /* Alien families
    // ============== */                                                        paws.infrastructure =
@@ -725,17 +710,37 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
 //    }(paws, [])
    
 
-/* =  - -===-=-== == =-=-= --=- =- =--   =-- =-====-  -==--= =- -   -=-== = --  - =---=-==  -= -= */
-if (require.main === module) switch (process.argv[2]) {
-
-case '-e':
-case '-f':
-~function(){ var _=
-   World.generate(cPaws.parse( process.argv[2] === '-e'? process.argv[3]
-    : require('fs').readFileSync(process.argv[3], 'utf8').replace(/^#!.*\n/, '') ))
- , root = _[0], here = _[1]
-   
-   here.infrastructure.execution.stage(root, null)
-}()
-                                                                                                   }
 if(module)module.exports=paws
+
+/* =  - -===-=-== == =-=-= --=- =- =--   =-- =-====-  -==--= =- -   -=-== = --  - =---=-==  -= -= */
+if (require.main === module) ~function(){ var
+   opt = require('optimist')
+      .usage("Provides a Paws ‘Layer 1’ host.\nInvocation: $0 [--no-start] -f foo.cp -f bar.cp")
+         .describe('start', "start the host")
+            .alias('start', 's').boolean('start').default('start', true)
+         .describe('f', "adds a file of cPaws source to be realized by the host")
+            .alias('f', 'file').string('f')
+         .describe('e', "directly adds a cPaws expression to be realized by the host")
+            .alias('e', 'expr').string('e')
+         .boolean('help')
+   
+ , argv = opt.parse(process.argv)
+ , files = [].concat(argv.f).filter(noop).map(function(file){
+      return fs.readFileSync(file, 'utf8').replace(/^#!.*\n/, '') })
+   
+ , earth = new World
+   
+ , roots = [].concat(argv.e, files).filter(noop).map(function(root){
+         root = new Execution(cPaws.parse(root))
+         earth.applyGlobals(root)
+         return root })
+   
+   if (argv.help || argv.usage)
+      opt.showHelp()
+   if (argv.start || typeof argv.start == 'undefined') // FIXME: Optimist is being a retard ...
+      earth.start()
+   
+   roots.forEach(function(root){
+      earth.queue.push(new Staging(root, null))
+      earth.realize() })
+}()
