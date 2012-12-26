@@ -522,6 +522,7 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
    implementation = {
       void: Execution(function(caller, here){ return function void_(){
          return here.infrastructure.execution.stage(caller, Execution(void_)) }() })
+    , stop: function($){ $.stop() } // Not sure I'm going to keep this around ...
     , util: {
          test:    function($) { console.log('test successful!') }
        , print:   function($,label){ console.log(label.string) }                                   }}
