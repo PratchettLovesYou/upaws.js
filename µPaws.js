@@ -144,26 +144,26 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
    inherits(Thing, Execution)
    Execution.prototype.receiver = /* defined below */                                                             /*|*/ undefined
    
-   Execution.synchronous = function(world, func){ var it = new Execution(new Function)
+   Execution.synchronous = function(here, func){ var it = new Execution(new Function)
       it.subs = new Array(func.length).join().split(',').map(function(){
          return function(caller, rv){
             this.subs.last = this.subs.last.curry(rv)
-            world.queue.push(new Staging(caller, this)) } })
+            here.queue.push(new Staging(caller, this)) } })
       
       it.subs.first = function(caller){ var that = this
          that.subs = that.subs.map(function(sub){ return sub.curry(caller) })
-         world.queue.push(new Staging(caller, that)) }
+         here.queue.push(new Staging(caller, that)) }
       
       // FIXME: *This* successfully doesn't-result from synchronous functions that *don't* return a
       //        non-undefined value; but it is still incorrectly implemented, in that it still
       //        coconsumes a `caller` argument. There's no way to know ahead-of-time whether a
       //        `Function` will return or not, so we'll have to make this mechanism explicit.
-      it.subs[func.length] = Function.apply(null, ['paws', 'world', 'func', 'caller'].concat(
+      it.subs[func.length] = Function.apply(null, ['paws', 'here', 'func', 'caller'].concat(
          Array(func.length + 1).join('_').split(''),                                            "\n"
           +"var rv = func.apply(this, [].slice.call(arguments, 4))"                            +"\n"
           +"if (typeof rv !== 'undefined')"                                                    +"\n"
-          +"   return world.infrastructure.execution.stage(caller, rv)"))
-      .curry(paws, world, func)
+          +"   return here.infrastructure.execution.stage(caller, rv)"))
+      .curry(paws, here, func)
       
       return it }
       
@@ -283,14 +283,13 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
    
    /* Interpretation
    // ============== */
-   Thing.prototype.receiver = new Execution(function(rv, world){ var arguments = rv.toArray()
+   Thing.prototype.receiver = new Execution(function(rv, $){ var arguments = rv.toArray()
     , results = arguments[1].find(arguments[2])
-      if (results[0])
-         world.queue.push(new Staging(arguments[0], results[0])) })
+         $.queue.push(new Staging(arguments[0], results[0])) })
    .name('thing×')
    
-   Execution.prototype.receiver = new Execution(function(rv, world){ var arguments = rv.toArray()
-      world.queue.push(new Staging(arguments[1].clone(), arguments[2])) })
+   Execution.prototype.receiver = new Execution(function(rv, $){ var arguments = rv.toArray()
+      $.queue.push(new Staging(arguments[1].clone(), arguments[2])) })
    .name('execution×')
                                                                                          paws.Mask =
    Mask = function(owner, roots){ var it = construct(this)
