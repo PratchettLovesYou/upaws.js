@@ -711,42 +711,49 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
 //          o[key].__identifier__ = key } catch(_){} })
 //    }(paws, [])
    
-   // TODO: needs to count parens, and concat multiple-lines
-   // TODO: needs to automatically inspect results (hence rePl.)
-   paws.REPL = function(world){ var sharedLocals
+// TODO: needs to count parens, and concat multiple-lines
+// TODO: needs to automatically inspect results (hence rePl.)
+   paws.REPL = function(here){ var sharedLocals, mutex, expression, resumption
     , read = require('readline').createInterface({ input: process.stdin, output: process.stdout })
       read.setPrompt(':: ')
       read.prompt()
       
       sharedLocals = new Execution(new Function)
-      world.applyGlobals(sharedLocals)
+      here.applyGlobals(sharedLocals)
       sharedLocals = sharedLocals.locals
       
-      read.on('line', function(expr){ var mutex
+      read.on('line', function(line){
          read.pause()
          
-         if (expr.length > 0) try {
+         if (line.length > 0) try {
             mutex = new Thing
-            expr = new Execution(cPaws.parse(expr))
-            expr.locals = sharedLocals
+            expression  = new Execution(cPaws.parse(line))
+            resumption = new Execution(function(){ read.prompt() }).name('<resume prompt>')
+            expression.locals = sharedLocals
             
-            // TODO: convenience for world.queue.push, new Mask, realize() pattern
-            world.queue.push(new Staging(expr, u, new Mask(expr, [mutex]))); world.realize()
-            world.queue.push(new Staging(new Execution(function(){ read.prompt() }).name('<resume prompt>')
-                         ,u, new Mask(expr, [mutex])))
+         // TODO: convenience for world.queue.push, new Mask, realize() pattern
+            here.queue.push(new Staging(expression ,u, new Mask(expression, [mutex])))
+            here.realize()
             
-            world.realize()
+            here.queue.push(new Staging(resumption ,u, new Mask(resumption, [mutex])))
+            here.realize()
          } catch(e) {
             console.log(e.message); console.log(e.stack)
             read.prompt() }
          
          else read.prompt() })
       
-      read.on('close', function(){
-         world.stop()
+      var SIGINT  = function(){ process.nextTick(function(){
+         here.invalidateRoots(expression, mutex) }) }
+      read   .on('SIGINT', SIGINT)
+      process.on('SIGINT', SIGINT)
+      
+      var SIGTERM = function(){
+         here.stop()
          read.write("\033[2K\033[0G")
-         process.stdin.destroy() }) }
-   
+         process.stdin.destroy() }
+      read   .on('close',   SIGTERM)
+      process.on('SIGTERM', SIGTERM) }
 
 if(module)module.exports=paws
 
