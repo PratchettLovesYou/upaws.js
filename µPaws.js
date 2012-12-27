@@ -504,6 +504,9 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
 //       
 //    }
 // }
+
+// FIXME: These are currently all assumed-synchronous; that is, they call take a caller. Many of
+//        them shouldn't (for instance, `print`.) Need an idiom for synchronous, non-‘returning’.
    infrastructure = {
       get:        function($,thing, num){ return thing.metadata[parseNum(num)].to }
 //  , find:       function($,thing, key){ return thing.find(key)[0] }
@@ -713,7 +716,7 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
    
 // TODO: needs to count parens, and concat multiple-lines
 // TODO: needs to automatically inspect results (hence rePl.)
-   paws.REPL = function(here){ var sharedLocals, mutex, expression, resumption
+   paws.REPL = function(here){ var sharedLocals, shortcircuit, mutex, expression, resumption
     , read = require('readline').createInterface({ input: process.stdin, output: process.stdout })
       read.setPrompt(':: ')
       read.prompt()
@@ -722,14 +725,17 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
       here.applyGlobals(sharedLocals)
       sharedLocals = sharedLocals.locals
       
-      read.on('line', function(line){
+      read.on('line', function(line){ if (shortcircuit) return shortcircuit = false
          read.pause()
          
          if (line.length > 0) try {
             mutex = new Thing
             expression  = new Execution(cPaws.parse(line))
-            resumption = new Execution(function(){ read.prompt() }).name('<resume prompt>')
             expression.locals = sharedLocals
+            resumption = new Execution(function(){
+               mutex = undefined
+               read.prompt()
+            }).name('<resume prompt>')
             
          // TODO: convenience for world.queue.push, new Mask, realize() pattern
             here.queue.push(new Staging(expression ,u, new Mask(expression, [mutex])))
@@ -744,7 +750,11 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
          else read.prompt() })
       
       var SIGINT  = function(){ process.nextTick(function(){
-         here.invalidateRoots(expression, mutex) }) }
+         if (mutex) here.invalidateRoots(expression, mutex)
+             else {
+               shortcircuit = true // horrible hack.
+               read.write('\n')
+               read.prompt() } }) }
       read   .on('SIGINT', SIGINT)
       process.on('SIGINT', SIGINT)
       
