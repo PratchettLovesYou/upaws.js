@@ -318,7 +318,6 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
       return far.flatten().intersect(this.flatten()).length === 0 }
                                                                                         paws.World =
    World = function(){ var it = construct(this)
-      it.occupant = undefined
       it.queue = [/* Staging */]
       it.ownershipTable = { blamees: [/* execution */]
                           , masks:   [/* Mask */] }
@@ -362,14 +361,18 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
       it.requestedMask = requestedMask || undefined
       return it }
    
-   World.prototype.record = function(requestedMask){ if (requestedMask) {
-      this.ownershipTable.blamees.push(this.occupant)
+   World.prototype.recordOwnership = function(blamee, requestedMask){ if (requestedMask) {
+      this.ownershipTable.blamees.push(blamee)
       this.ownershipTable.masks.push(requestedMask) }}
-   World.prototype.invalidate = function(execution){ var table = this.ownershipTable
-      table.blamees.forEach(function(blamee, i){
-         if (blamee === execution) {
-            table.blamees.splice(i,1)
-            table.masks  .splice(i,1) } }) }
+   World.prototype.invalidateRoots = function(blamee){ var roots = [].slice.apply(arguments)
+    , blamee = roots.shift()
+    , table = this.ownershipTable
+      table.blamees.forEach(function(it, i){
+         if (it === blamee) {
+                table.masks[i].roots.intersect(roots)
+            if (table.masks[i].roots.length == 0) {
+                table.blamees.splice(i,1)
+                table.masks  .splice(i,1) }} }) }
    
    World.prototype.realize = function(){ var here = this, st, jx, rv, receiver
       ++here.count
@@ -387,8 +390,7 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
                        , 'stagee: '+I(st.stagee)
                        , 'resumptionValue: '+I(st.resumptionValue))
          
-         here.occupant = st.stagee
-         here.record(st.requestedMask)
+         here.recordOwnership(st.stagee, st.requestedMask)
          
          if (st.stagee.alien)
             return jx.call(st.stagee, st.resumptionValue, here)
@@ -398,7 +400,7 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
          ++here.count
          
          if (st.stagee.complete())
-            here.invalidate(st.stagee)
+            here.invalidateRoots(st.stagee)
          
       }())
       while (--here.count)
