@@ -6,10 +6,9 @@ Object.keys(paws)
    .forEach(function(key){
       global[key] = paws[key] })
 
+// FIXME: ALL BROKEN. BROKEN BROKEN BROKEN.
 ~function(){ var u
-   
- , red   = function($){ return "\033[37;41m"+$+"\033[0m" }
- , green = function($){ return "\033[37;42m"+$+"\033[0m" }
+ , earth = new World()
    
    // The following is something like:
    //    
@@ -34,53 +33,44 @@ Object.keys(paws)
    //    stage (foo)
    //    stage (bar)
    //    
- , some_thing = new Thing()
- , some_child = new Thing()
+ , some_thing = new Thing().name('some_thing')
+ , some_child = new Thing().name('some_child')
    
- , greedy = new Execution(                                                             function(rv){
+ , greedy = new Execution(                                                           function(rv,$){
       debug.info(debug.ANSI.bold('(greedy)')+' ')
          ("Charged w/ "+debug.ANSI.brwhite('`some_thing`'))
-      infrastructure.execution .charge(this,this, some_thing)
-      infrastructure.execution.unstage(this,this)                                    },function(rv){
+      infrastructure.execution .charge(greedy, some_thing, $)
+      infrastructure.execution.unstage(greedy)                                     },function(rv,$){
       debug.info(debug.ANSI.bold('(greedy)')+' ')
          ("Acquired "+debug.ANSI.brwhite('`some_thing`'))
       setTimeout(
          infrastructure.execution.stage
-                               , 2500, this,this)
-      infrastructure.execution.unstage(this,this)                                    },function(rv){
+                               , 2500, greedy ,u, $)
+      infrastructure.execution.unstage(greedy)                                     },function(rv,$){
       debug.info(debug.ANSI.bold('(greedy)')+' ')
-         ("Discharged "+debug.ANSI.brwhite('`some_thing`'))
-      infrastructure.execution.unstage(this,this)                                    } )
+         ("Discharged "+debug.ANSI.brwhite('`some_thing`'))                        }).name('greedy')
    
- , desirous = new Execution(                                                           function(rv){
+ , desirous = new Execution(                                                         function(rv,$){
       debug.info(debug.ANSI.bold('(desirous)')+' ')
          ("Charged w/ "+debug.ANSI.brwhite('`some_child`'))
-      infrastructure.execution .charge(this,this, some_child)
-      infrastructure.execution.unstage(this,this)                                    },function(rv){
+      infrastructure.execution .charge(desirous, some_child, $)
+      infrastructure.execution.unstage(desirous)                                   },function(rv,$){
       debug.info(debug.ANSI.bold('(desirous)')+' ')
          ("Acquired "+debug.ANSI.brwhite('`some_child`'))
       setTimeout(
          infrastructure.execution.stage
-                               , 1500, this,this)
-      infrastructure.execution.unstage(this,this)                                    },function(rv){
-      
+                               , 1500, desirous ,u, $)
+      infrastructure.execution.unstage(desirous)                                   },function(rv,$){
       debug.info(debug.ANSI.bold('(desirous)')+' ')
          ("Discharged "+debug.ANSI.brwhite('`some_child`'))
-      infrastructure.execution.unstage(this,this)                                    } )
-   
-   
-   some_thing._id_ = 'some_thing'
-   some_child._id_ = 'some_child'
-   greedy._id_ = 'greedy'
-   desirous._id_ = 'desirous'
-   
-   console.log("=== Let's go! ===")
-   new Stage().start()
+      infrastructure.execution.unstage(desirous)                                   }).name('desirous')
    
    infrastructure.set(some_thing, 1, some_child)
    infrastructure.charge(some_thing, 1)
    
-   infrastructure.execution.stage(u,greedy)
-   infrastructure.execution.stage(u,desirous)
+   earth.queue.push(new Staging(greedy))
+   earth.queue.push(new Staging(desirous))
    
+   console.log(debug.ANSI.bold("=== Let's go!"))
+   earth.start()
 }()

@@ -506,16 +506,21 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
 //  , find:       function(thing, key ,_){ return thing.find(key)[0] }
     , set:        function(thing, num, it ,_){    thing.metadata[parseNum(num)] = Relation(it) }
     , cut:        function(thing, num ,_){ return thing.metadata.splice(parseNum(num), 1)[0].to }
+      
     , affix:      function(thing, it ,_){         thing.metadata.push(Relation(it)) }
     , unaffix:    function(thing ,_){      return thing.metadata.pop().to }
     , prefix:     function(thing, it ,_){         thing.metadata.unshift(Relation(it)) }
     , unprefix:   function(thing ,_){      return thing.metadata.shift().to }
+      
+    , charge:     function(thing, num, _){        thing.metadata[parseNum(num)].isResponsible = true }
+    , discharge:  function(thing, num, _){        thing.metadata[parseNum(num)].isResponsible = false }
+      
     , execution: {
          stage:      function(execution, resumptionValue, here){
             here.queue.push(new Staging(execution, resumptionValue))
             here.realize()
             return new Label('') } // FIXME: How can I avoid resulting, here?
-   }}
+       , unstage:    function(){}                                                                 }}
                                                                                paws.implementation =
    implementation = {
       stop:       Execution(function(_,here){ here.stop() }) // Not sure I'll keep this ...

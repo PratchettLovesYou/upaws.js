@@ -7,31 +7,30 @@ Object.keys(paws)
       global[key] = paws[key] })
 
 ~function(){ var u
- , red   = function($){ return "\033[31m"+$+"\033[0m" }
- , green = function($){ return "\033[32m"+$+"\033[0m" }
+ , earth = new World()
    
  , foo = new Execution(
-      function(rv){
-         console.log(red('One,'))
-         infrastructure.execution.stage(this,this) }
-    , function(rv){
-         console.log(red('two,'))
-         infrastructure.execution.stage(this,this) }
-    , function(rv){
-         console.log(red('three!')) })
+      function(rv, here){
+         console.log(debug.ANSI.red('One,'))
+         infrastructure.execution.stage(foo ,u, here) }
+    , function(rv, here){
+         console.log(debug.ANSI.red('two,'))
+         infrastructure.execution.stage(foo ,u, here) }
+    , function(rv, here){
+         console.log(debug.ANSI.red('three!')) })
    
  , bar = new Execution(
-      function(rv){
-         console.log(green('Aeh,'))
-         infrastructure.execution.stage(this,this) }
-    , function(rv){
-         console.log(green('bee,'))
-         infrastructure.execution.stage(this,this) }
-    , function(rv){
-         console.log(green('cee!')) })
+      function(rv, here){
+         console.log(debug.ANSI.green('Aeh,'))
+         infrastructure.execution.stage(bar ,u, here) }
+    , function(rv, here){
+         console.log(debug.ANSI.green('bee,'))
+         infrastructure.execution.stage(bar ,u, here) }
+    , function(rv, here){
+         console.log(debug.ANSI.green('cee!')) })
    
-   infrastructure.execution.stage(u,foo)
-   infrastructure.execution.stage(u,bar)
+   earth.queue.push(new Staging(foo))
+   earth.queue.push(new Staging(bar))
    
-console.log("=== Let's go!")
-new Stage().start() }()
+   console.log(debug.ANSI.bold("=== Let's go!"))
+   earth.start() }()
