@@ -143,28 +143,27 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
    inherits(Thing, Execution)
    Execution.prototype.receiver = /* defined below */                                                             /*|*/ undefined
    
-   Execution.synchronous = function(here, func){ var it = new Execution(new Function)
-      it.subs = new Array(func.length).join().split(',').map(function(){
-         return function(caller, rv){
+   Execution.synchronous = function(func){ var it = new Execution(new Function)
+    , arity = func.length - 1
+      
+      it.subs = new Array(arity).join().split(',').map(function(){
+         return function(caller, rv, here){
             this.subs.last = this.subs.last.curry(rv)
             here.queue.push(new Staging(caller, this))
             here.realize() } })
       
-      it.subs.first = function(caller){ var that = this
+      it.subs.first = function(caller, here){ var that = this
          that.subs = that.subs.map(function(sub){ return sub.curry(caller) })
          here.queue.push(new Staging(caller, that))
          here.realize() }
       
-      // FIXME: *This* successfully doesn't-result from synchronous functions that *don't* return a
-      //        non-undefined value; but it is still incorrectly implemented, in that it still
-      //        coconsumes a `caller` argument. There's no way to know ahead-of-time whether a
-      //        `Function` will return or not, so we'll have to make this mechanism explicit.
-      it.subs[func.length] = Function.apply(null, ['paws', 'here', 'func', 'caller'].concat(
-         Array(func.length + 1).join('_').split(''),                                            "\n"
-          +"var rv = func.apply(this, [].slice.call(arguments, 4))"                            +"\n"
-          +"if (typeof rv !== 'undefined')"                                                    +"\n"
-          +"   return here.infrastructure.execution.stage(caller, rv)"))
-      .curry(paws, here, func)
+      it.subs[arity] = Function.apply(null, ['paws', 'func', 'caller'].concat(
+         Array(arity + 1).join('_').split(''), 'here',                                          "\n"
+          +"var rv = func.apply(this, [].slice.call(arguments, 3))"                            +"\n"
+          +"if (typeof rv !== 'undefined') {"                                                  +"\n"
+          +"   here.queue.push(new paws.Staging(caller, rv))"                                  +"\n"
+          +"   here.realize() }"))
+      .curry(paws, func)
       
       return it }
       
@@ -322,9 +321,6 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
       it.ownershipTable = { blamees: [/* execution */]
                           , masks:   [/* Mask */] }
       
-      it.infrastructure = this.ownBag(paws.infrastructure)
-      it.implementation = this.ownBag(paws.implementation)
-      
       return it }
    
    // Non-concurrent implementation! Yay! </sarcasm>
@@ -432,14 +428,14 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
    
    World.prototype.applyGlobals = function(root){ var here = this
       function $$(el, key){ if (el) switch(el.constructor){
-         case Function: return Execution.synchronous(here, el).name(key)
+         case Function: return Execution.synchronous(el).name(key)
          case Label: case Execution:
             case Thing: return (el.named? el : el.name(key)).irresponsible
          case Relation: return el
          case Object:   return new Thing(el.map($$)).responsible }} 
       root.locals.push({
-         infrastructure: new Thing( here.infrastructure.map($$) ).name('infrastructure')
-       , implementation: new Thing( here.implementation.map($$) ).name('implementation')          }) }
+         infrastructure: new Thing( paws.infrastructure.map($$) ).name('infrastructure')
+       , implementation: new Thing( paws.implementation.map($$) ).name('implementation')          }) }
    
    /* Alien families
    // ============== */                                                        paws.infrastructure =
@@ -505,20 +501,19 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
 //    }
 // }
 
-// FIXME: We don't need to curry $ into these; it's already passed as the last argument to aliens
    infrastructure = {
-      get:        function($,thing, num){ return thing.metadata[parseNum(num)].to }
-//  , find:       function($,thing, key){ return thing.find(key)[0] }
-    , set:        function($,thing, num, it){    thing.metadata[parseNum(num)] = Relation(it) }
-    , cut:        function($,thing, num){ return thing.metadata.splice(parseNum(num), 1)[0].to }
-    , affix:      function($,thing, it){         thing.metadata.push(Relation(it)) }
-    , unaffix:    function($,thing){      return thing.metadata.pop().to }
-    , prefix:     function($,thing, it){         thing.metadata.unshift(Relation(it)) }
-    , unprefix:   function($,thing){      return thing.metadata.shift().to }
+      get:        function(thing, num ,_){ return thing.metadata[parseNum(num)].to }
+//  , find:       function(thing, key ,_){ return thing.find(key)[0] }
+    , set:        function(thing, num, it ,_){    thing.metadata[parseNum(num)] = Relation(it) }
+    , cut:        function(thing, num ,_){ return thing.metadata.splice(parseNum(num), 1)[0].to }
+    , affix:      function(thing, it ,_){         thing.metadata.push(Relation(it)) }
+    , unaffix:    function(thing ,_){      return thing.metadata.pop().to }
+    , prefix:     function(thing, it ,_){         thing.metadata.unshift(Relation(it)) }
+    , unprefix:   function(thing ,_){      return thing.metadata.shift().to }
     , execution: {
-         stage:      function($,execution, resumptionValue){
-            $.queue.push(new Staging(execution, resumptionValue))
-            $.realize()
+         stage:      function(execution, resumptionValue, here){
+            here.queue.push(new Staging(execution, resumptionValue))
+            here.realize()
             return new Label('') } // FIXME: How can I avoid resulting, here?
    }}
                                                                                paws.implementation =
@@ -527,8 +522,9 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
     , util: {
          test:    Execution(function(){ console.log('test successful!') })
        , print:   Execution(function(label){ console.log(label.string) })                          }
-    , void: Execution(function(caller, here){ return function void_(){
-         return here.infrastructure.execution.stage(caller, Execution(void_)) }() })               }
+    , void: Execution(function(caller, here){ return function void_(_,here){
+         here.queue.push(new Staging(caller, Execution(void_)))
+         here.realize() }(_,here) })                                                               }
    
                                                                                                                   /*|*/;paws.utilities = new Object()
                                                                            paws.utilities.parseNum =
