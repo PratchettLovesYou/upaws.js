@@ -505,8 +505,7 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
 //    }
 // }
 
-// FIXME: These are currently all assumed-synchronous; that is, they call take a caller. Many of
-//        them shouldn't (for instance, `print`.) Need an idiom for synchronous, non-‘returning’.
+// FIXME: We don't need to curry $ into these; it's already passed as the last argument to aliens
    infrastructure = {
       get:        function($,thing, num){ return thing.metadata[parseNum(num)].to }
 //  , find:       function($,thing, key){ return thing.find(key)[0] }
@@ -524,12 +523,12 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
    }}
                                                                                paws.implementation =
    implementation = {
-      void: Execution(function(caller, here){ return function void_(){
-         return here.infrastructure.execution.stage(caller, Execution(void_)) }() })
-    , stop: function($){ $.stop() } // Not sure I'm going to keep this around ...
+      stop:       Execution(function(_,here){ here.stop() }) // Not sure I'll keep this ...
     , util: {
-         test:    function($) { console.log('test successful!') }
-       , print:   function($,label){ console.log(label.string) }                                   }}
+         test:    Execution(function(){ console.log('test successful!') })
+       , print:   Execution(function(label){ console.log(label.string) })                          }
+    , void: Execution(function(caller, here){ return function void_(){
+         return here.infrastructure.execution.stage(caller, Execution(void_)) }() })               }
    
                                                                                                                   /*|*/;paws.utilities = new Object()
                                                                            paws.utilities.parseNum =
