@@ -212,23 +212,24 @@ new Check(  new Execution(func1, func2)  )
 (function(alien){ return alien.complete() })
 
 var earth      = new World
-  , fun        = function(a, b, c){ return new Thing(a, b, c) }
+  , fun        = function(a, b, c ,_){ return new Thing(a, b, c) }
   , caller     = new Execution(new Function)
   , parameters = {one: new Thing, two: new Thing, three: new Thing}
   , sub1, sub2
-new Check(  new Execution.synchronous(earth, fun)  )
+new Check(  new Execution.synchronous(fun)  )
 (function(synch){ return synch.subs.length == 4 })
-(function(synch){ return synch.subs.last.length == 4 })
-(function(synch){        synch.advance()(caller)
+(function(synch){ return synch.subs.last.length == 5 })
+(function(synch){        synch.advance()(caller, earth)
                   return synch.subs.length == 3
-                      && synch.subs.last.length == 3 })
-(function(synch){        synch.advance()(parameters.one)
+                      && synch.subs.last.length == 4 })
+(function(synch){        synch.advance()(parameters.one, earth)
                   return synch.subs.length == 2
-                      && synch.subs.last.length == 2 })
-(function(synch){        synch.advance()(parameters.two)
+                      && synch.subs.last.length == 3 })
+(function(synch){        synch.advance()(parameters.two, earth)
                   return synch.subs.length == 1
-                      && synch.subs.last.length == 1 })
-(function(synch){        synch.advance()(parameters.three)
+                      && synch.subs.last.length == 2 })
+(function(synch){ return broken; // I have no idea how to test this.
+                         synch.advance()(parameters.three, earth)
                      var staging = earth.queue.pop()
                   return synch.subs.length == 0
                       && staging.stagee === caller
@@ -347,7 +348,7 @@ new Check(  second  )
 (function(curried){ return typeof curried === 'function' })
 (function(curried){ return curried.final      === bound1 })
 (function(curried){ return curried.toString() === bound1.toString() })
-(function(curried){ var res = curried(4, 5); debugger;
+(function(curried){ var res = curried(4, 5)
                  return res.arguments.equals(['one', 'two', 'three', something, 4, 5])
                      && res.this === arb1 })
 

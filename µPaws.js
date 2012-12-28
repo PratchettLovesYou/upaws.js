@@ -90,7 +90,7 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
          case Thing:    return [new Relation(that, resp)]
          case Array:    return [].concat.apply([]
                          , that.map(function(el){ return Thing.toRelations(el, resp, seen) }))
-         default:       return Object.getOwnPropertyNames(that).map(function(key){ var
+         default:       return Object.keys(that).map(function(key){ var
                            pair = new Thing(new Label(key).responsible) // May be redundant
                            pair.push.apply(pair, Thing.toRelations(that[key], resp, seen))
                            return pair.responsible }) } }()]) && seen.last
@@ -617,16 +617,16 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
       return global.eval('(function('+arguments.join(', ')+'){ return '+arguments[0]+this+' })') })
    
    define(Object.prototype, 'filter', function(cb){ var that = this
-      return Object.getOwnPropertyNames(that).reduce(function(acc, key){
+      return Object.keys(that).reduce(function(acc, key){
          if ( cb.call(that, that[key], key, that) )
             acc[key] = that[key]
          return acc }, new Object) })
    define(Object.prototype, 'map',    function(cb){ var that = this
-      return Object.getOwnPropertyNames(that).reduce(function(acc, key){
+      return Object.keys(that).reduce(function(acc, key){
          acc[key] = cb.call(that, that[key], key, that)
          return acc }, new Object) })
    define(Object.prototype, 'reduce', function(cb, initial){ var that = this
-      return Object.getOwnPropertyNames(that).reduce(function(acc, key){
+      return Object.keys(that).reduce(function(acc, key){
          return cb.call(that, acc, that[key], key, that) }, initial) })
    
    getter(Object.prototype, '‽', function(){ console.log(require('sys').inspect(this)); return this })
@@ -768,7 +768,7 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
 if(module)module.exports=paws
 
 /* =  - -===-=-== == =-=-= --=- =- =--   =-- =-====-  -==--= =- -   -=-== = --  - =---=-==  -= -= */
-if (require.main === module) ~function(){ var
+if (require.main === module && process.argv.length > 2) ~function(){ var
    opt = require('optimist')
       .usage("Provides a Paws ‘Layer 1’ host.\nInvocation: $0 [--no-start] -f foo.cp -f bar.cp")
          .describe('start', "start the host")
