@@ -71,10 +71,18 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
       it.isResponsible = resp || undefined
       return it }
    
+   Relation.prototype.clone = function(){ return new Relation(this.to, this.isResponsible) }
+   
    chainee(Relation.prototype, 'responsible',   function(){ this.isResponsible = true })
    chainee(Relation.prototype, 'irresponsible', function(){ this.isResponsible = false })
    getter(Thing.prototype,     'responsible',   function(){ return R(this).responsible })
    getter(Thing.prototype,     'irresponsible', function(){ return R(this).irresponsible })
+   
+   Thing.prototype.clone = function(to){ var to = to || new Thing()
+      if (it.constructor.parent)
+          it.constructor.parent.prototype.clone.call(this, to)
+      to.metadata = this.metadata.map(function(rel){ return rel? rel.clone() : rel })
+      return it }
    
    Thing.pair = function(key, value){ return new Thing( new Label(key), value ).responsible }
    
@@ -109,11 +117,17 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
                                       rel.to.metadata[2].to : undefined })
             .filter(function(_){return _}) }
                                                                                         paws.Label =
-   Label = function(string){ it = construct(this)
+   Label = function(string){ var it = construct(this)
       it.string = string || undefined
       return it }
    inherits(Thing, Label)
    Label.prototype.toString = function(){ return ANSI.cyan("'"+this.string+"'") }
+   
+   Label.prototype.clone = function(to){ var to = to || new Label('')
+      if (it.constructor.parent)
+          it.constructor.parent.prototype.clone.call(this, to)
+      to.string = this.string
+      return it }
    
    Label.prototype.compare = function(right){
       return right instanceof Label && this.string === right.string }
@@ -291,7 +305,7 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
    .name('thing×')
    
    Execution.prototype.receiver = new Execution(function(rv, $){ var arguments = rv.toArray()
-      $.queue.push(new Staging(arguments[1].clone(), arguments[2]))
+      $.queue.push(new Staging(new Execution(arguments[1]), arguments[2]))
       $.realize() })
    .name('execution×')
                                                                                          paws.Mask =
@@ -392,7 +406,7 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
             return jx.call(st.stagee, st.resumptionValue, here)
          
          rv = new Thing; rv.push(jx.context, jx.left, jx.right)
-         here.queue.push(new Staging(jx.left.receiver.clone(), rv))
+         here.queue.push(new Staging(new Execution(jx.left.receiver), rv))
          ++here.count
          
          if (st.stagee.complete())
@@ -439,71 +453,9 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
    
    /* Alien families
    // ============== */                                                        paws.infrastructure =
-   // FIXME: Much of the code here is a lie. This is a direct, on-the-stack JavaScript
-   //        implementation, which Will Not Work™. Many of these aliens need do MSR or mutation, and
-   //        thus need to charge and discharge things *themselves*, which means they (these aliens)
-   //        need to propagate through the staging queue and whatnot. This is going to be complex ...
-   // Then again, this is a non-concurrent implementation. Maybe that's fine? (Nope. Chuck Testa.)
-// infrastructure = ǁ = {
-//         get: function(thing, number){ return thing.metadata[parseNum(number)].to }
-//  ,      set: function(thing, number, e){     thing.metadata[parseNum(number)] = new Relation(e) }
-//  ,    affix: function(thing, e){             thing.metadata.push(new Relation(e)) }
-//  ,  unaffix: function(thing){         return thing.metadata.pop().to }
-//  ,   prefix: function(thing, e){             thing.metadata.unshift(new Relation(e)) }
-//  , unprefix: function(thing){         return thing.metadata.shift().to }
-//  ,   remove: function(thing, number){ return thing.metadata.splice(parseNum(number), 1)[0].to }
-//    
-//  , clone: function(thing){ var metadata = thing.metadata
-//       thing = new Thing()
-//       thing.metadata = metadata.map(function(relation){
-//          return new Relation(relation.to, relation.isResponsible) })
-//       return thing }
-//  , adopt: function(thing, other){ thing.metadata = other.metadata.slice() } // IDFK: Utilizes identical `Relation`ships.
-//    // More note on the above: not sure how I’m going to define these semantics eventually, but
-//    // for the moment, the only sane way to call these if you don’t want weird behaviour where
-//    // changes to the responsibility-cascading grid affect unrelated objects, is to `clone()`
-//    // before `adopt()`ing.
-//    
-//  ,    receiver: function(thing){ return thing.receiver }
-//  , setReceiver: function(thing, receiver){
-//       if (!receiver || typeof receiver === 'function')
-//          receiver = new Execution(receiver)
-//       thing.receiver = receiver }
-//    
-//  ,    charge: function(thing, number){ thing.metadata[parseNum(number)].isResponsible = true }
-//  , discharge: function(thing, number){ thing.metadata[parseNum(number)].isResponsible = false }
-//    
-//  , compare: function(thing1, thing2){ return thing1 === thing2 } // FIXME: Currently a JavaScript boolean. Need Paws booleans.
-//    
-//  , label: {
-//       compare: function(label1, label2){ return label1.string === label2.string }
-//     ,   clone: function(label){ return new Label(label.string) } }
-//    
-//  , execution: {
-//       unstage: function(){ /* noop */ }
-//       // TODO: way to determine branch-ship
-//     , stage: function(_, execution, resumptionValue){
-//          Stage.queue.push(new Staging(execution, resumptionValue))
-//       ;( Stage.default ? Stage.default : new Stage() ).realize() }
-//       
-//     , branch: function(execution){ rv(/* NYI */) }
-//       
-//       // FIXME: Not exactly correct semantics, as this doesn't unstage the current execution.
-//     , charge: function(_, execution, thing){
-//          if (_ === execution) {
-//             Stage.queue.push(new Staging(execution, undefined, new Mask(execution, [thing])))
-//          ;( Stage.default ? Stage.default : new Stage() ).realize() }
-//          else {
-//             // FIXME: Needs to verify that the requested mask is a subgraph of the caller's,
-//             //           or ensure the mask is requested next time the execution is staged
-//             Stage.ownershipTable.add(new Mask(execution, [thing])) }}
-//       
-//    }
-// }
-
    infrastructure = {
       get:        function(thing, num ,_){ return thing.metadata[parseNum(num)].to }
-//  , find:       function(thing, key ,_){ return thing.find(key)[0] }
+//  , find:       function(thing, key ,_){ return thing.find(key)[0] } // NYI: need a fromArray()
     , set:        function(thing, num, it ,_){    thing.metadata[parseNum(num)] = Relation(it) }
     , cut:        function(thing, num ,_){ return thing.metadata.splice(parseNum(num), 1)[0].to }
       
@@ -512,15 +464,40 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
     , prefix:     function(thing, it ,_){         thing.metadata.unshift(Relation(it)) }
     , unprefix:   function(thing ,_){      return thing.metadata.shift().to }
       
-    , charge:     function(thing, num, _){        thing.metadata[parseNum(num)].isResponsible = true }
-    , discharge:  function(thing, num, _){        thing.metadata[parseNum(num)].isResponsible = false }
+    , compare:    function(first, second ,_){
+         return first === second? first : undefined }
+      
+    , clone:      function(thing ,_){      return Thing.prototype.clone.call(thing) }
+    , adopt:      function(thing, adoptee ,_){    thing.metadata = adoptee.metadata.clone().slice() }
+      
+    , receiver:   function(thing ,_){      return thing.receiver }
+    , receive:    function(thing, execution ,_){  thing.receiver = execution }
+      
+    , charge:     function(thing, num ,_){        thing.metadata[parseNum(num)].isResponsible = true }
+    , discharge:  function(thing, num ,_){        thing.metadata[parseNum(num)].isResponsible = false }
+      
+    , label: {
+         clone:      function(label ,_){         return Label.prototype.clone.call(label) }
+       , compare:    function(first, second ,_){
+            return first.string == second.string? first : undefined }
+         
+       , explode:    function(label ,_){ var
+            it = new Thing
+            it.push.apply(it, label.split('').map(function(char){ return new Label(char) }))
+            return it }                                                                            }
       
     , execution: {
-         stage:      function(execution, resumptionValue, here){
+         branch:     function(execution ,_){ return new Execution(execution) }
+         
+       , stage:      function(execution, resumptionValue, here){
             here.queue.push(new Staging(execution, resumptionValue))
             here.realize()
-            return new Label('') } // FIXME: How can I avoid resulting, here?
-       , unstage:    function(){}                                                                 }}
+            return execution }
+       , unstage:    function(_){}                                                                 
+         
+       , charge:     function(_){} // NYI
+       , discharge:  function(_){} // NYI
+   }}
                                                                                paws.implementation =
    implementation = {
       stop:       Execution(function(_,here){ here.stop() }) // Not sure I'll keep this ...
