@@ -696,6 +696,10 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
    paws.REPL = function(here){ var sharedLocals, shortcircuit, mutex, expression, resumption
     , read = require('readline').createInterface({ input: process.stdin, output: process.stdout })
       read.setPrompt(':: ')
+      
+      console.log("Successive lines will be parsed as individual executions, with shared locals.")
+      console.log("  (make sure you understand the basics: `less Getting.Started.*`)")
+      console.log("  (⌃d to close the input-stream; ⌃c to synchronously force new input)")
       read.prompt()
       
       sharedLocals = new Execution(new Function)
