@@ -503,7 +503,9 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
       stop:       Execution(function(_,here){ here.stop() }) // Not sure I'll keep this ...
     , util: {
          test:    Execution(function(){ console.log('test successful!') })
-       , print:   Execution(function(label){ console.log(label.string) })                          }
+       , print:   Execution(function(label){ console.log(label.string) })
+       , inspect: Execution(function(thing){ console.log(thing.inspect()) })
+      }
     , void: Execution(function(caller, here){ return function void_(_,here){
          here.queue.push(new Staging(caller, Execution(void_)))
          here.realize() }(_,here) })                                                               }
@@ -711,7 +713,9 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
          
          if (line.length > 0) try {
             mutex = new Thing
-            expression  = new Execution(cPaws.parse(line))
+            expression = new Expression(paws.implementation.util.inspect)
+            expression.append(new Expression(cPaws.parse(line)))
+            expression = new Execution(expression).name('<interactive line>')
             expression.locals = sharedLocals
             resumption = new Execution(function(){
                mutex = undefined
