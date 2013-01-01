@@ -79,10 +79,12 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
    getter(Thing.prototype,     'irresponsible', function(){ return R(this).irresponsible })
    
    Thing.prototype.clone = function(to){ var to = to || new Thing()
-      if (it.constructor.parent)
-          it.constructor.parent.prototype.clone.call(this, to)
+       if (Thing.parent)
+      to = Thing.parent.prototype.clone.call(this, to)
+      
       to.metadata = this.metadata.map(function(rel){ return rel? rel.clone() : rel })
-      return it }
+      
+      return to }
    
    Thing.pair = function(key, value){ return new Thing( new Label(key), value ).responsible }
    
@@ -124,35 +126,29 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
    Label.prototype.toString = function(){ return ANSI.cyan("'"+this.string+"'") }
    
    Label.prototype.clone = function(to){ var to = to || new Label('')
-      if (it.constructor.parent)
-          it.constructor.parent.prototype.clone.call(this, to)
+       if (Label.parent)
+      to = Label.parent.prototype.clone.call(this, to)
+      
       to.string = this.string
-      return it }
+      
+      return to }
    
    Label.prototype.compare = function(right){
       return right instanceof Label && this.string === right.string }
                                                                                    ;paws.Execution =
-   Execution = function(something){ var   original, it = construct(this)
-      if (something instanceof Execution) original = something
-      
-         it.pristine = original? original.pristine : true
-      if (original && original.alien
-      ||  typeof something === 'function') {
+   Execution = function(something){ var original, it = construct(this)
+         it.pristine = true
+      if (typeof something === 'function') {
          it.alien = true
-         it.subs = Array.prototype.slice.call(original? original.subs : arguments) }
+         it.subs = Array.prototype.slice.call(arguments) }
       else {
-         it.position = original? original.position      : something || undefined
-         it.stack    = original? original.stack.slice() : new Array }
+         it.position = something || undefined
+         it.stack    = new Array }
       
-      if (original) // XXX: For now, clones are going to *share* locals.
-         it.locals = original.locals
-      else {
          it.locals = new Thing().name('locals')
-         it.locals.push({locals: R(it.locals, true)}) }
+         it.locals.push({locals: R(it.locals, true)})
          it       .push({locals: R(it.locals, true)})
       
-      if (original && original.hasOwnProperty('name'))
-         it.name = original.name + '′'
       return it }
    inherits(Thing, Execution)
    Execution.prototype.receiver = /* defined below */                                                             /*|*/ undefined
@@ -196,12 +192,32 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
       rv.push('locals:   '+this.locals.inspect())
       return rv.join("\n") }
    
+   // FIXME: All of the way this clones locals is undefined and wrong. I need to decide how I
+   //        actually *want* this to happen. It's a confusing mess.
+   Execution.prototype.
+   clone = function(to){ var to = to || new Execution(this.alien? function(){} : undefined)
+       if (Execution.parent)
+      to = Execution.parent.prototype.clone.call(this, to)
+      
+          to.pristine = this.pristine
+      if (to.alien    = this.alien)
+          to.subs     = this.subs.slice()
+      else {
+          to.position = this.position
+          to.stack    = this.stack.slice() }
+          
+          to.locals   = this.locals
+          to.push({locals: R(to.locals, true)})
+      
+      if (this.named)
+          to.name     = this.name
+      
+      return to }
+   
    Execution.prototype.
    complete = function(){
       if (this.alien) return !this.subs.length
       else            return typeof this.position === 'undefined' && this.stack.length === 0 }
-   
-   Execution.prototype.clone = function(){ return new Execution(this) }
    
    Execution.prototype.
    advance = function(rv) { var juxt, s
@@ -305,7 +321,7 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
    .name('thing×')
    
    Execution.prototype.receiver = new Execution(function(rv, $){ var arguments = rv.toArray()
-      $.queue.push(new Staging(new Execution(arguments[1]), arguments[2]))
+      $.queue.push(new Staging(arguments[1].clone(), arguments[2]))
       $.realize() })
    .name('execution×')
                                                                                          paws.Mask =
@@ -406,7 +422,7 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
             return jx.call(st.stagee, st.resumptionValue, here)
          
          rv = new Thing; rv.push(jx.context, jx.left, jx.right)
-         here.queue.push(new Staging(new Execution(jx.left.receiver), rv))
+         here.queue.push(new Staging(jx.left.receiver.clone(), rv))
          ++here.count
          
          if (st.stagee.complete())
@@ -487,7 +503,7 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
             return it }                                                                            }
       
     , execution: {
-         branch:     function(execution ,_){ return new Execution(execution) }
+         branch:     function(execution ,_){ return execution.clone() }
          
        , stage:      function(execution, resumptionValue, here){
             here.queue.push(new Staging(execution, resumptionValue))
