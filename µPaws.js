@@ -16,12 +16,13 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
   , paws = new Object()                                                                                           /*|*/;~function $(l,n){ l(function(i){n=i}); if(n)$(n) }
                                                                                                                   /*|*/ (function one($){ $(function two($){
                                                                                         paws.Thing =
-   Thing = function(/* metadata... */){ var it = construct(this)
+   Thing = function(noughtify){ var it = construct(this)
       it.id = Thing.counter++
       it.metadata = new Array
-      it.push.apply(it, [].slice.apply(arguments))
-      if (arguments.callee.caller !== arguments.callee
-      &&  it.metadata.length > 0)
+      if (typeof noughtify !== 'boolean')
+         it.push.apply(it, [].slice.apply(arguments))
+      if (noughtify === true ||
+         (arguments.callee.caller !== arguments.callee && it.metadata.length > 0))
          it.metadata.unshift(undefined)
       return it }
    Thing.prototype.receiver = /* defined below */                                                                 /*|*/ undefined
@@ -469,8 +470,17 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
    
    /* Alien families
    // ============== */                                                        paws.infrastructure =
+// A lot of uncertain shit in this.
+//  - There's no number type; so I do some stupid shit with decimal-numeric labels. Very fragile,
+//    not intended to last.
+//  - Some of these aren't at all planned, I threw them in because I *needed* them when playing with
+//    things: `length`, everything under `number`. Again, not intended to last.
+//  - `branch`, `stage`, and `unstage` need to be re-thought-out in light of the *actual
+//    implementation design* that we've arrived at. Thoroughly.
    infrastructure = {
-      get:        function(thing, num ,_){ return thing.metadata[parseNum(num)].to }
+      empty:      function(_){ return new Thing(true) }
+      
+    , get:        function(thing, num ,_){ return thing.metadata[parseNum(num)].to }
 //  , find:       function(thing, key ,_){ return thing.find(key)[0] } // NYI: need a fromArray()
     , set:        function(thing, num, it ,_){    thing.metadata[parseNum(num)] = Relation(it) }
     , cut:        function(thing, num ,_){ return thing.metadata.splice(parseNum(num), 1)[0].to }
