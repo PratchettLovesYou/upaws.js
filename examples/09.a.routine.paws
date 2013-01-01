@@ -1,0 +1,70 @@
+#!/usr/bin/env node ./µPaws.js -f
+implementation void()
+
+  “Provide a shortcut to `infrastructure`”
+ ( infrastructure execution stage()
+      (infrastructure affix() (locals))
+      (infrastructure empty())                                                )
+ ( infrastructure execution stage()
+      (infrastructure charge() (locals))
+      (infrastructure length() (locals))                                      )
+
+ ( infrastructure execution stage()
+     (infrastructure affix() 
+       ( infrastructure get() (locals) (infrastructure length() (locals)) ))
+      ‡                                                                       )
+ ( infrastructure execution stage()
+     (infrastructure affix() 
+       ( infrastructure get() (locals) (infrastructure length() (locals)) ))
+      (infrastructure)                                                        )
+
+
+  “Store our routine on `locals`”
+ ( ‡ execution stage()  (‡ affix() (locals))(‡ empty())                       )
+ ( ‡ execution stage()  (‡ charge() (locals))(‡ length() (locals))            )
+
+ ( ‡ execution stage()
+    ( ‡ affix() (‡ get() (locals) (‡ length() (locals))) )my.routine          )
+ ( ‡ execution stage()
+    ( ‡ affix() (‡ get() (locals) (‡ length() (locals))) )
+      { implementation util print Success! }                                  )
+
+
+  “Building a reusable parameters-list for the `thing` receiver”
+ ( ‡ execution stage()  (‡ affix() (locals))(‡ empty())                       )
+ ( ‡ execution stage()  (‡ charge() (locals))(‡ length() (locals))            )
+
+ ( ‡ execution stage()
+    ( ‡ affix() (‡ get() (locals) (‡ length() (locals))) )parameters          )
+ ( ‡ execution stage()
+    ( ‡ affix() (‡ get() (locals) (‡ length() (locals))) )(‡ empty())         )
+
+ ( ‡ execution stage()  (‡ set() (parameters) 0)()                            )
+ ( ‡ execution stage()  (‡ set() (parameters) 1)(my.routine)                  )
+ ( ‡ execution stage()  (‡ set() (parameters) 2)locals                        )
+
+  “Copying a reference to `my.routine locals` for easy access”
+ ( ‡ execution stage()  (‡ affix() (locals))(‡ empty())                       )
+ ( ‡ execution stage()  (‡ charge() (locals))(‡ length() (locals))            )
+
+ ( ‡ execution stage()
+    ( ‡ affix() (‡ get() (locals) (‡ length() (locals))) )my.locals           )
+ ( ‡ execution stage()
+    ( ‡ affix() (‡ get() (locals) (‡ length() (locals))) )
+       ( ‡ receiver() (‡ empty()) (parameters) )                              )
+
+  “Create a new pair for `implementation` on `my.routine locals`”
+ ( ‡ execution stage()  (‡ affix() (my.locals))(‡ empty())                    )
+ ( ‡ execution stage()  (‡ charge() (my.locals))(‡ length() (my.locals))      )
+
+ ( ‡ execution stage()
+    ( ‡ affix() (‡ get() (my.locals) (‡ length() (my.locals))) )
+         implementation                                                       )
+ ( ‡ execution stage()
+    ( ‡ affix() (‡ get() (my.locals) (‡ length() (my.locals))) )
+         (implementation)                                                     )
+
+
+ ( ‡ execution stage() (my.routine)()                                         )
+
+ ( implementation stop() )

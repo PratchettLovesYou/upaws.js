@@ -490,6 +490,8 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
     , prefix:     function(thing, it ,_){         thing.metadata.unshift(Relation(it)) }
     , unprefix:   function(thing ,_){      return thing.metadata.shift().to }
       
+    , length:     function(thing ,_){      return new Label(thing.metadata.length - 1) }
+      
     , compare:    function(first, second ,_){
          return first === second? first : undefined }
       
@@ -528,9 +530,10 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
    implementation = {
       stop:       Execution(function(_,here){ here.stop() }) // Not sure I'll keep this ...
     , util: {
-         test:    Execution(function(){ console.log('test successful!') })
-       , print:   Execution(function(label){ console.log(label.string) })
-       , inspect: Execution(function(thing){ console.log(thing.inspect()) })
+         test:       Execution(function(){ console.log('test successful!') })
+       , print:      Execution(function(label){ console.log(label.string) })
+       , inspect:    Execution(function(thing){ console.log(thing.inspect()) })
+       , debugger:   Execution(function(){ debugger })
       }
     , void: Execution(function(caller, here){ return function void_(_,here){
          here.queue.push(new Staging(caller, Execution(void_)))
