@@ -793,15 +793,20 @@ if (require.main === module && process.argv.length > 2) ~function(){ var
          .describe('i', "interactively prompt for expressions to realize")
             .alias('i', 'interactive').boolean('i')
          .boolean('help')
-   
  , argv = opt.parse(process.argv)
- , files = [].concat(argv.f).filter(noop).map(function(file){
+   
+ , readFromStdin = false
+ , files = [].concat(argv.f, argv._.slice(2)).filter(noop).map(function(file){
+      if (file === '-') {
+          file = '/dev/stdin'
+      if (readFromStdin) return
+          readFromStdin = true }
       return fs.readFileSync(file, 'utf8').replace(/^#!.*\n/, '') })
    
  , earth = new World
    
  , roots = [].concat(argv.e, files).filter(noop).map(function(root){
-         root = new Execution(cPaws.parse(root))
+         root = new Execution(cPaws.parse(root)).name('root')
          earth.applyGlobals(root)
          return root })
    
@@ -810,7 +815,7 @@ if (require.main === module && process.argv.length > 2) ~function(){ var
    if (argv.start || typeof argv.start == 'undefined') // FIXME: Optimist is being a retard ...
       earth.start()
    
-   roots.forEach(function(root){
+   roots.forEach(function(root){ if (!root) return
       earth.queue.push(new Staging(root, null))
       earth.realize() })
    
