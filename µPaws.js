@@ -155,7 +155,7 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
    Execution.prototype.receiver = /* defined below */                                                             /*|*/ undefined
    
    Execution.synchronous = function(func){ var it = new Execution(new Function)
-    , arity = func.length - 1
+    , arity = func.length
       
       it.subs = new Array(arity).join().split(',').map(function(){
          return function(caller, rv, here){
@@ -170,7 +170,9 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
       
       it.subs[arity] = Function.apply(null, ['paws', 'func', 'caller'].concat(
          Array(arity + 1).join('_').split(''), 'here',                                          "\n"
-          +"var rv = func.apply(this, [].slice.call(arguments, 3))"                            +"\n"
+          +"var rv = func.apply({ caller: caller, this: this"                                  +"\n"
+          +"                    , world: arguments[arguments.length - 1] }"                    +"\n"
+          +"                  , [].slice.call(arguments, 3) )"                                 +"\n"
           +"if (typeof rv !== 'undefined') {"                                                  +"\n"
           +"   here.queue.push(new paws.Staging(caller, rv))"                                  +"\n"
           +"   here.realize() }"))
@@ -478,53 +480,54 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
 //  - `branch`, `stage`, and `unstage` need to be re-thought-out in light of the *actual
 //    implementation design* that we've arrived at. Thoroughly.
    infrastructure = {
-      empty:      function(_){ return new Thing(true) }
+      empty:      function(){ return new Thing(true) }
       
-    , get:        function(thing, num ,_){ return thing.metadata[parseNum(num)].to }
-//  , find:       function(thing, key ,_){ return thing.find(key)[0] } // NYI: need a fromArray()
-    , set:        function(thing, num, it ,_){    thing.metadata[parseNum(num)] = Relation(it) }
-    , cut:        function(thing, num ,_){ return thing.metadata.splice(parseNum(num), 1)[0].to }
+    , get:        function(thing, num){ return thing.metadata[parseNum(num)].to }
+//  , find:       function(thing, key){ return thing.find(key)[0] } // NYI: need a fromArray()
+    , set:        function(thing, num, it){    thing.metadata[parseNum(num)] = Relation(it) }
+    , cut:        function(thing, num){ return thing.metadata.splice(parseNum(num), 1)[0].to }
       
-    , affix:      function(thing, it ,_){         thing.metadata.push(Relation(it)) }
-    , unaffix:    function(thing ,_){      return thing.metadata.pop().to }
-    , prefix:     function(thing, it ,_){         thing.metadata.unshift(Relation(it)) }
-    , unprefix:   function(thing ,_){      return thing.metadata.shift().to }
+    , affix:      function(thing, it){         thing.metadata.push(Relation(it)) }
+    , unaffix:    function(thing){      return thing.metadata.pop().to }
+    , prefix:     function(thing, it){         thing.metadata.unshift(Relation(it)) }
+    , unprefix:   function(thing){      return thing.metadata.shift().to }
       
-    , length:     function(thing ,_){      return new Label(thing.metadata.length - 1) }
+    , length:     function(thing){      return new Label(thing.metadata.length - 1) }
       
-    , compare:    function(first, second ,_){
+    , compare:    function(first, second){
          return first === second? first : undefined }
       
-    , clone:      function(thing ,_){      return Thing.prototype.clone.call(thing) }
-    , adopt:      function(thing, adoptee ,_){    thing.metadata = adoptee.metadata.clone().slice() }
+    , clone:      function(thing){      return Thing.prototype.clone.call(thing) }
+    , adopt:      function(thing, adoptee){    thing.metadata = adoptee.metadata.clone().slice() }
       
-    , receiver:   function(thing ,_){      return thing.receiver }
-    , receive:    function(thing, execution ,_){  thing.receiver = execution }
+    , receiver:   function(thing){      return thing.receiver }
+    , receive:    function(thing, execution){  thing.receiver = execution }
       
-    , charge:     function(thing, num ,_){        thing.metadata[parseNum(num)].isResponsible = true }
-    , discharge:  function(thing, num ,_){        thing.metadata[parseNum(num)].isResponsible = false }
+    , charge:     function(thing, num){        thing.metadata[parseNum(num)].isResponsible = true }
+    , discharge:  function(thing, num){        thing.metadata[parseNum(num)].isResponsible = false }
       
     , label: {
-         clone:      function(label ,_){         return Label.prototype.clone.call(label) }
-       , compare:    function(first, second ,_){
+         clone:      function(label){         return Label.prototype.clone.call(label) }
+       , compare:    function(first, second){
             return first.string == second.string? first : undefined }
          
-       , explode:    function(label ,_){ var
+       , explode:    function(label){ var
             it = new Thing
             it.push.apply(it, label.split('').map(function(char){ return new Label(char) }))
             return it }                                                                            }
       
     , execution: {
-         branch:     function(execution ,_){ return execution.clone() }
+         branch:     function(execution_){ return execution.clone() }
          
-       , stage:      function(execution, resumptionValue, here){
-            here.queue.push(new Staging(execution, resumptionValue))
-            here.realize()
+       , stage:      function(execution, resumptionValue){
+            this.world.queue.push(new Staging(execution, resumptionValue))
+            this.world.realize()
             return execution }
-       , unstage:    function(_){}                                                                 
+       , unstage:    function(){}                                                                 
          
-       , charge:     function(_){} // NYI
-       , discharge:  function(_){} // NYI
+       , own:        function(){} // NYI
+       , charge:     function(){} // NYI
+       , discharge:  function(){} // NYI
    }}
                                                                                paws.implementation =
    implementation = {
