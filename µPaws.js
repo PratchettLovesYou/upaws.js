@@ -350,8 +350,8 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
                                                                                         paws.World =
    World = function(){ var it = construct(this)
       it.queue = [/* Staging */]
-      it.ownershipTable = { blamees: [/* execution */]
-                          , masks:   [/* Mask */] }
+      it.table = { blamees: [/* execution */]
+                 , masks:   [/* Mask */] }
       
       return it }
    
@@ -359,25 +359,16 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
    World.current = undefined
    World.prototype.count = 0
    
-   World.prototype.next = function(){ var table = this.ownershipTable
+   World.prototype.next = function(){
       // We look for the foremost element of the queue that either:
       // 1. isn’t already staged (inapplicable to this implementation),
       // 2. doesn’t have an associated `requestedMask`,
       // 3. is already responsible for a mask equivalent to the one requested,
       // 4. or whose requested mask doesn’t conflict with any existing ones, excluding its own
       for (var i = 0; i < this.queue.length; ++i) { var it = this.queue[i]
-         alreadyResponsible = function(){
-            return table.masks
-               .filter(function(mask, j){ return table.blamees[j] === it.stagee })
-                 .some(function(mask)   { return mask.contains(it.requestedMask)              }) }
-       , requestConflicts = function(){
-            return table.masks
-               .filter(function(mask, j){ return table.blamees[j] !== it.stagee })
-                 .some(function(mask)   { return it.requestedMask.conflictsWith(mask)         }) }
-         
        , canBeStaged = !it.requestedMask
-                    ||  alreadyResponsible()
-                    || !requestConflicts()
+                    ||  this.   has(it.stagee, it.requestedMask)
+                    ||  this.canHas(it.stagee, it.requestedMask)
          
          if (canBeStaged)
             return this.queue.splice(i,1)[0] }}
@@ -389,18 +380,27 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
       it.requestedMask = requestedMask || undefined
       return it }
    
+   World.prototype.has    = function(it, what){ var that = this
+      return  that.table.masks
+         .filter(function(mask, j){ return that.table.blamees[j] === it })
+           .some(function(mask)   { return mask.contains(what)          }) }
+   World.prototype.canHas = function(it, what){ var that = this
+      return !that.table.masks
+         .filter(function(mask, j){ return that.table.blamees[j] !== it })
+           .some(function(mask)   { return what.conflictsWith(mask)     }) }
+   
    World.prototype.recordOwnership = function(blamee, requestedMask){ if (requestedMask) {
-      this.ownershipTable.blamees.push(blamee)
-      this.ownershipTable.masks.push(requestedMask) }}
-   World.prototype.invalidateRoots = function(blamee){ var roots = [].slice.apply(arguments)
+      this.table.blamees.push(blamee)
+      this.table.masks.push(requestedMask) }}
+   World.prototype.invalidateRoots = function(blamee){ var that = this
+    , roots = [].slice.apply(arguments)
     , blamee = roots.shift()
-    , table = this.ownershipTable
-      table.blamees.forEach(function(it, i){
+      that.table.blamees.forEach(function(it, i){
          if (it === blamee) {
-                table.masks[i].roots.intersect(roots)
-            if (roots.length == 0 || table.masks[i].roots.length == 0) {
-                table.masks  .splice(i,1)
-                table.blamees.splice(i,1) }} }) }
+                that.table.masks[i].roots.intersect(roots)
+            if (roots.length == 0 || that.table.masks[i].roots.length == 0) {
+                that.table.masks  .splice(i,1)
+                that.table.blamees.splice(i,1) }} }) }
    
    World.prototype.realize = function(){ var here = this, st, jx, rv, receiver
       ++here.count
