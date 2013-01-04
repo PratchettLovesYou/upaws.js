@@ -124,7 +124,7 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
       it.string = string || undefined
       return it }
    inherits(Thing, Label)
-   Label.prototype.toString = function(){ return ANSI.cyan("'"+this.string+"'") }
+   Label.prototype.toString = function(){ return ANSI.cyan('“'+this.string+'”') }
    
    Label.prototype.clone = function(to){ var to = to || new Label('')
        if (Label.parent)
@@ -183,7 +183,7 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
     ? ANSI.brmagenta(this.named? '´'+this.name+'´' : '´anon´')
     : ANSI.brmagenta(this.named? '`'+this.name+'`' : '`anon`') }
    Execution.prototype.inspect = function() { var rv = new Array
-     !this.alien && this.stack.length > 0 && rv.push(ANSI.brblack('stack:    ')
+     !this.alien && this.stack.length > 0 && rv.push('stack:    '
        + ANSI.brwhite('[') + this.stack.map('.value'._).reverse().map('.toString()'._)
                .join(ANSI.brwhite(', ')) + ANSI.brwhite(']'))
      !this.alien && rv.push('position: '
