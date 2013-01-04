@@ -328,8 +328,7 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
       $.realize() })
    .name('execution×')
                                                                                          paws.Mask =
-   Mask = function(owner, roots){ var it = construct(this)
-      it.owner = owner || undefined
+   Mask = function(roots){ var it = construct(this)
       it.roots = roots || [/* Thing */]
       return it }
    
@@ -399,9 +398,9 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
       table.blamees.forEach(function(it, i){
          if (it === blamee) {
                 table.masks[i].roots.intersect(roots)
-            if (table.masks[i].roots.length == 0) {
-                table.blamees.splice(i,1)
-                table.masks  .splice(i,1) }} }) }
+            if (roots.length == 0 || table.masks[i].roots.length == 0) {
+                table.masks  .splice(i,1)
+                table.blamees.splice(i,1) }} }) }
    
    World.prototype.realize = function(){ var here = this, st, jx, rv, receiver
       ++here.count
@@ -757,10 +756,10 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
             }).name('<resume prompt>')
             
          // TODO: convenience for world.queue.push, new Mask, realize() pattern
-            here.queue.push(new Staging(expression ,u, new Mask(expression, [mutex])))
+            here.queue.push(new Staging(expression ,u, new Mask([mutex])))
             here.realize()
             
-            here.queue.push(new Staging(resumption ,u, new Mask(resumption, [mutex])))
+            here.queue.push(new Staging(resumption ,u, new Mask([mutex])))
             here.realize()
          } catch(e) {
             console.log(e.message); console.log(e.stack)
