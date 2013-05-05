@@ -11,24 +11,25 @@ Object.keys(paws)
 
 ~function(){ var u
  , earth = new World()
+ , infrastructure = earth.ownBag(paws.infrastructure)
    
  , foo = new Execution(
       function(rv, here){
          console.log(debug.ANSI.red('One,'))
-         infrastructure.execution.stage(foo ,u, here) }
+         earth.stage(foo) }
     , function(rv, here){
          console.log(debug.ANSI.red('two,'))
-         infrastructure.execution.stage(foo ,u, here) }
+         earth.stage(foo) }
     , function(rv, here){
          console.log(debug.ANSI.red('three!')) })
    
  , bar = new Execution(
       function(rv, here){
          console.log(debug.ANSI.green('Aeh,'))
-         infrastructure.execution.stage(bar ,u, here) }
+         earth.stage(bar) }
     , function(rv, here){
          console.log(debug.ANSI.green('bee,'))
-         infrastructure.execution.stage(bar ,u, here) }
+         earth.stage(bar) }
     , function(rv, here){
          console.log(debug.ANSI.green('cee!')) })
    

@@ -380,6 +380,10 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
       it.requestedMask = requestedMask || undefined
       return it }
    
+   World.prototype.stage = function(execution, resumptionValue){
+      this.queue.push(new Staging(execution, resumptionValue))
+      this.realize() }
+   
    World.prototype.has    = function(it, what){ var that = this
       return  that.table.masks
          .filter(function(mask, j){ return that.table.blamees[j] === it })
@@ -519,10 +523,9 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
          branch:     function(execution_){ return execution.clone() }
          
        , stage:      function(execution, resumptionValue){
-            this.world.queue.push(new Staging(execution, resumptionValue))
-            this.world.realize()
+            this.world.stage(execution, resumptionValue)
             return execution }
-       , unstage:    function(){}                                                                 
+       , unstage:    function(){}
          
        , own:        function(){} // NYI
        , charge:     function(){} // NYI

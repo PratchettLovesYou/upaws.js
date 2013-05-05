@@ -16,7 +16,7 @@ Object.keys(paws)
  , root = new Execution( cPaws.parse(process.argv[2]) ).name('root')
  , whee = new Execution(function(rv, $){ var caller = rv
       console.log('whee.')
-      infrastructure.execution.stage(caller, new Label(''), $) })
+      earth.stage(caller, new Label(''), $) })
    .name('whee!')
    
    console.log(debug.ANSI.bold("=== Let's go! ==="))
@@ -29,5 +29,5 @@ Object.keys(paws)
    var inf = new Thing({'whee!': whee}).name('infrastructure')
    root.locals.push({infrastructure: inf})
    
-   infrastructure.execution.stage(root ,u, earth)
+   earth.stage(root)
 }()
