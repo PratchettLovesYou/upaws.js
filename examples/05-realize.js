@@ -6,6 +6,11 @@ Object.keys(paws)
    .forEach(function(key){
       global[key] = paws[key] })
 
+// Example invocation:
+//     DEBUG=9 ./examples/05-realize.js 'infrastructure whee!()'
+//     DEBUG=9 ./examples/05-realize.js 'infrastructure print() abc' # FIXME
+
+
 ~function(){ var juxt, rv = 0, u = undefined
  , earth = new World
  , root = new Execution( cPaws.parse(process.argv[2]) ).name('root')

@@ -2,6 +2,9 @@
 var paws = require('../µpaws')
   , util = require('util')
 
+// Example invocation:
+//     DEBUG=9 ./examples/02-advance.js 'infrastructure print () whee!'
+
 ~function(){ var juxt, rv = 0
  , ex = new paws.Execution(
                paws.cPaws.parse(process.argv[2]) )

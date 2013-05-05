@@ -6,6 +6,9 @@ Object.keys(paws)
    .forEach(function(key){
       global[key] = paws[key] })
 
+// Example invocation:
+//     DEBUG=9 ./examples/03-aliens.js
+
 ~function(){ var u
  , earth = new World()
    
