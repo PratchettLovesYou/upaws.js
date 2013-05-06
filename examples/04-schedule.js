@@ -6,7 +6,9 @@ Object.keys(paws)
    .forEach(function(key){
       global[key] = paws[key] })
 
-// FIXME: ALL BROKEN. BROKEN BROKEN BROKEN.
+// Example invocation:
+//     DEBUG=9 ./examples/04-schedule.js
+
 ~function(){ var u
  , earth = new World()
    
@@ -63,7 +65,7 @@ Object.keys(paws)
    /* earth.unstage(desirous) */                                                   },function(rv,$){
       debug.info(debug.ANSI.bold('(desirous)')+' ')
          ("Discharged "+debug.ANSI.brwhite('some_child'))
-   /* earth.unstage(desirous) */                                                 }).name('desirous')
+      earth.stop()                                                               }).name('desirous')
    
    some_thing.metadata[1] = some_child.responsible
    

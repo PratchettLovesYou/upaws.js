@@ -7,7 +7,7 @@ Object.keys(paws)
       global[key] = paws[key] })
 
 // Example invocation:
-//     DEBUG=9 ./examples/03-aliens.js
+//     ./examples/03-aliens.js
 
 ~function(){ var u
  , earth = new World()
@@ -37,4 +37,5 @@ Object.keys(paws)
    earth.queue.push(new Staging(bar))
    
    console.log(debug.ANSI.bold("=== Let's go!"))
-   earth.start() }()
+   earth.start()
+   setTimeout(function(){ earth.stop() }, 1000) }()
