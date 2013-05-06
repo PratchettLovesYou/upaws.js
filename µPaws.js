@@ -434,15 +434,15 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
          here.recordOwnership(st.stagee, st.requestedMask)
          
          if (st.stagee.alien)
-            return jx.call(st.stagee, st.resumptionValue, here)
-         
-         rv = new Thing; rv.push(jx.context, jx.left, jx.right)
-         here.queue.push(new Staging(jx.left.receiver.clone(), rv))
-         ++here.count
+            jx.call(st.stagee, st.resumptionValue, here)
+         else {
+            rv = new Thing; rv.push(jx.context, jx.left, jx.right)
+            here.queue.push(new Staging(jx.left.receiver.clone(), rv))
+            ++here.count
+         }
          
          if (st.stagee.complete())
             here.invalidateRoots(st.stagee)
-         
       }())
       while (--here.count)
       
