@@ -74,8 +74,8 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
    
    Relation.prototype.clone = function(){ return new Relation(this.to, this.isResponsible) }
    
-   chainee(Relation.prototype, 'responsible',   function(){ this.isResponsible = true })
-   chainee(Relation.prototype, 'irresponsible', function(){ this.isResponsible = false })
+   chainee(Relation.prototype, 'responsible',   function(){ this.isResponsible = true; return this })
+   chainee(Relation.prototype, 'irresponsible', function(){ this.isResponsible = false; return this })
    getter(Thing.prototype,     'responsible',   function(){ return R(this).responsible })
    getter(Thing.prototype,     'irresponsible', function(){ return R(this).irresponsible })
    
@@ -833,7 +833,7 @@ if (require.main === module && process.argv.length > 2) ~function(){ var
       earth.start()
    
    roots.forEach(function(root){ if (!root) return
-      earth.queue.push(new Staging(root, null))
+      earth.queue.push(new Staging(root))
       earth.realize() })
    
    if (argv.i)
