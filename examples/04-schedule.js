@@ -65,8 +65,7 @@ Object.keys(paws)
          ("Discharged "+debug.ANSI.brwhite('some_child'))
    /* earth.unstage(desirous) */                                                 }).name('desirous')
    
- //infrastructure.set(some_thing, 1, some_child)
- //infrastructure.charge(some_thing, 1)
+   some_thing.metadata[1] = some_child.responsible
    
    earth.queue.push(new Staging(greedy))
    earth.queue.push(new Staging(desirous))
