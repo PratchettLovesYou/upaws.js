@@ -377,11 +377,20 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
    Staging = function(stagee, resumptionValue, requestedMask){ var it = construct(this)
       it.stagee = stagee || undefined
       it.resumptionValue = resumptionValue || undefined
-      it.requestedMask = requestedMask || undefined
+      // FIXME: Duck-type this. Icky, hard-coded, ew.
+      it.requestedMask = requestedMask instanceof Mask ? requestedMask
+                       : requestedMask instanceof Array ? Mask(requestedMask)
+                       : requestedMask ? Mask([requestedMask]) : requestedMask
       return it }
    
-   World.prototype.stage = function(execution, resumptionValue){
-      this.queue.push(new Staging(execution, resumptionValue))
+   // NOTE: JS-API `own()` doesn't follow the current libside `#charge` semantics; I still don't
+   //       know what to do about providing a resumptionValue to charge-calls. Feels like
+   //       something's off in the *design*, here. Might need to split internal-charge away from
+   //       ‘external-charge’ (and figure out if the latter should even *exist*. Isn't “sharing
+   //       ownership” fundamentally different, anyway?)
+   World.prototype.stage =
+   World.prototype.own = function(execution, resumptionValue, requestedMask){
+      this.queue.push(new Staging(execution, resumptionValue, requestedMask))
       this.realize() }
    
    World.prototype.has    = function(it, what){ var that = this

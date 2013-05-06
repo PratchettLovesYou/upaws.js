@@ -38,35 +38,35 @@ Object.keys(paws)
    
  , greedy = new Execution(                                                           function(rv,$){
       debug.info(debug.ANSI.bold('(greedy)')+' ')
-         ("Charged w/ "+debug.ANSI.brwhite('`some_thing`'))
-      infrastructure.execution .charge(greedy, some_thing, $)
-      infrastructure.execution.unstage(greedy)                                     },function(rv,$){
+         ("Charged w/ "+debug.ANSI.brwhite('some_thing'))
+      earth.own(greedy ,u, some_thing)
+   /* earth.unstage(greedy) */                                                     },function(rv,$){
       debug.info(debug.ANSI.bold('(greedy)')+' ')
-         ("Acquired "+debug.ANSI.brwhite('`some_thing`'))
+         ("Acquired "+debug.ANSI.brwhite('some_thing'))
       setTimeout(
-         infrastructure.execution.stage
-                               , 2500, greedy ,u, $)
-      infrastructure.execution.unstage(greedy)                                     },function(rv,$){
+         earth.stage
+                               , 2500, greedy)
+   /* earth.unstage(greedy) */                                                     },function(rv,$){
       debug.info(debug.ANSI.bold('(greedy)')+' ')
-         ("Discharged "+debug.ANSI.brwhite('`some_thing`'))                        }).name('greedy')
+         ("Discharged "+debug.ANSI.brwhite('some_thing'))                          }).name('greedy')
    
  , desirous = new Execution(                                                         function(rv,$){
       debug.info(debug.ANSI.bold('(desirous)')+' ')
-         ("Charged w/ "+debug.ANSI.brwhite('`some_child`'))
-      infrastructure.execution .charge(desirous, some_child, $)
-      infrastructure.execution.unstage(desirous)                                   },function(rv,$){
+         ("Charged w/ "+debug.ANSI.brwhite('some_child'))
+      earth.own(desirous ,u, some_child)
+   /* earth.unstage(desirous) */                                                   },function(rv,$){
       debug.info(debug.ANSI.bold('(desirous)')+' ')
-         ("Acquired "+debug.ANSI.brwhite('`some_child`'))
+         ("Acquired "+debug.ANSI.brwhite('some_child'))
       setTimeout(
-         infrastructure.execution.stage
-                               , 1500, desirous ,u, $)
-      infrastructure.execution.unstage(desirous)                                   },function(rv,$){
+         earth.stage
+                               , 1500, desirous)
+   /* earth.unstage(desirous) */                                                   },function(rv,$){
       debug.info(debug.ANSI.bold('(desirous)')+' ')
-         ("Discharged "+debug.ANSI.brwhite('`some_child`'))
-      infrastructure.execution.unstage(desirous)                                   }).name('desirous')
+         ("Discharged "+debug.ANSI.brwhite('some_child'))
+   /* earth.unstage(desirous) */                                                 }).name('desirous')
    
-   infrastructure.set(some_thing, 1, some_child)
-   infrastructure.charge(some_thing, 1)
+ //infrastructure.set(some_thing, 1, some_child)
+ //infrastructure.charge(some_thing, 1)
    
    earth.queue.push(new Staging(greedy))
    earth.queue.push(new Staging(desirous))
