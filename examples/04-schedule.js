@@ -44,7 +44,7 @@ Object.keys(paws)
       debug.info(debug.ANSI.bold('(greedy)')+' ')
          ("Acquired "+debug.ANSI.brwhite('some_thing'))
       setTimeout(
-         earth.stage
+         earth.stage.bind(earth)
                                , 2500, greedy)
    /* earth.unstage(greedy) */                                                     },function(rv,$){
       debug.info(debug.ANSI.bold('(greedy)')+' ')
@@ -58,7 +58,7 @@ Object.keys(paws)
       debug.info(debug.ANSI.bold('(desirous)')+' ')
          ("Acquired "+debug.ANSI.brwhite('some_child'))
       setTimeout(
-         earth.stage
+         earth.stage.bind(earth)
                                , 1500, desirous)
    /* earth.unstage(desirous) */                                                   },function(rv,$){
       debug.info(debug.ANSI.bold('(desirous)')+' ')
