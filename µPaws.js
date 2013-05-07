@@ -41,22 +41,28 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
    
    // TODO: Refactor *all* of this crap.
    Thing.prototype.toString = function(){ return this.named? this.name:'' }
-   Thing.prototype.inspect = function _inspect(){ var indent = 0
+   Thing.prototype.inspect = function _inspect(shortForm){ var indent = 0
       return function $$(it, i, seen, split){ var content, lines, old_seen = seen.slice()
          if (!it) return ''
          if (!split && seen.indexOf(it) >= 0)
             return Thing.inspectID(it)+ANSI.brwhite('...'); else seen.push(it)
-         if (it.constructor !== Thing && $$.caller !== _inspect)
+         if (!split && it.constructor !== Thing && $$.caller !== _inspect)
             return it.toString()
+         if (!split && it.constructor === Thing && $$.caller !== _inspect && it.named)
+            return Thing.inspectID(it)
          
          if (it.metadata.length === 3
          &&  it.metadata[1] && it.metadata[1].to instanceof Label
          &&  it.metadata[2])
                 content = ANSI.cyan(it.metadata[1].to.string+': ')
                         + $$(it.metadata[2].to, ++i, seen)
-         else { content = Thing.inspectID(it)+ANSI.brwhite('(')
-                        + it.toArray().map(function(thing){ return $$(thing, ++i, seen) })
-            .join((split?"\n":'')+ANSI.brwhite(', '))+ANSI.brwhite(')')
+         else {
+            if (split || (shortForm && $$.caller !== _inspect))
+               return Thing.inspectID(it)
+            
+            content = Thing.inspectID(it)+ANSI.brwhite('(')
+                    + it.toArray().map(function(thing){ return $$(thing, ++i, seen) })
+                     .join((split?"\n":'')+ANSI.brwhite(', '))+ANSI.brwhite(')')
             
             lines = content.split("\n")
             if (split)
@@ -684,12 +690,12 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
    
    /* Debugging
    // ========= */
+   // FIXME: This is all a massive, buggy, tightly-coupled clusterfuck.
    P = function P(it) {return (log.element||noop).call(log,
-      it instanceof Thing? Thing.prototype.inspect.apply(it)
-    : (it? it.toString() : ANSI.red('null')) )}
+      it ? (it.constructor === Thing? Thing.prototype.inspect.call(it, true) : it.toString()) : ANSI.red('null') )}
    I = function I(it) { var a, b, tag
       if (!(it instanceof Thing)) return (it?
-         (it.inspect? it.inspect:it.toString).call(it) : ANSI.red('null') )
+         (it.constructor.prototype.hasOwnProperty('inspect')? it.inspect:it.toString).call(it) : ANSI.red('null') )
       if (log.element && (/\n/.test(a = it.inspect()) || ANSI.strip(a).length >= 60)) { tag = Thing.inspectID(it)
          b = log.element(tag + it.toString()); log.extra(tag, a); return b }
          else return a }
