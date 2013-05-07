@@ -29,7 +29,7 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
    Thing.counter = 1
    
    Thing.inspectID = function(it) {
-      return ANSI.brblack('❲'+it.id+'❳') }
+      return ANSI.brblack('❲'+it.id+(it.named?':'+it.name:'')+'❳') }
    
    getter(Thing.prototype, 'named', function(){ return this.hasOwnProperty('name') })
    Thing.prototype.name = function(name){ this.name = name; return this }
@@ -43,7 +43,7 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
       return function $$(it, i, seen, split){ var content, lines, old_seen = seen.slice()
          if (!it) return ''
          if (!split && seen.indexOf(it) >= 0)
-            return Thing.inspectID(it)+it.toString()+ANSI.brwhite('...'); else seen.push(it)
+            return Thing.inspectID(it)+ANSI.brwhite('...'); else seen.push(it)
          if (it.constructor !== Thing && $$.caller !== _inspect)
             return it.toString()
          
