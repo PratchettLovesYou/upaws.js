@@ -431,7 +431,7 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
          if (        st.stagee.complete() ) return
          if (!( jx = st.stagee.advance(st.resumptionValue) )) return
          
-         debug(7, '>> '+(new Error().stack.split("\n").length-2+'/'+here.count))
+         debug(7, '>>'+(DEBUG>=9?' '+(new Error().stack.split("\n").length-2+'/'+here.count):''))
             ( 'stagee: '+(DEBUG>=8?I:P)(st.stagee)
             , 'resumptionValue: '+(DEBUG>=8?I:P)(st.resumptionValue) )
          
