@@ -429,9 +429,9 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
          if (        st.stagee.complete() ) return
          if (!( jx = st.stagee.advance(st.resumptionValue) )) return
          
-         debug(7, '>> ')(new Error().stack.split("\n").length-2+'/'+here.count
-                       , 'stagee: '+I(st.stagee)
-                       , 'resumptionValue: '+I(st.resumptionValue))
+         debug(7, '>> '+(new Error().stack.split("\n").length-2+'/'+here.count))
+            ( 'stagee: '+(DEBUG>=8?I:P)(st.stagee)
+            , 'resumptionValue: '+(DEBUG>=8?I:P)(st.resumptionValue) )
          
          here.recordOwnership(st.stagee, st.requestedMask)
          
@@ -688,7 +688,7 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
          b = log.element(tag + it.toString()); log.extra(tag, a); return b }
          else return a }
                                                                                         paws.debug =
-   debug = function(level, before){ var level = level || 7, before = before || ''
+   debug = function(level, before){ var level = level || 7, before = before ? before+' ' : ''
     , caller = arguments.callee.caller.name || arguments.callee.caller.__identifier__
     , before = (caller? caller+'(':'')
          +ANSI.brblack('#'+(new Error).stack.split("\n")[2].split(':')[1])
