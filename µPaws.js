@@ -639,18 +639,18 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
       arguments = [].slice.apply(arguments.length? arguments:['it'])
       return global.eval('(function('+arguments.join(', ')+'){ return '+arguments[0]+this+' })') })
    
-   define(Object.prototype, 'filter', function(cb){ var that = this
+   define(Object.prototype, 'filter', function(cb, thisObject){ var that = this
       return Object.keys(that).reduce(function(acc, key){
-         if ( cb.call(that, that[key], key, that) )
+         if ( cb.call(thisObject, that[key], key, that) )
             acc[key] = that[key]
          return acc }, new Object) })
-   define(Object.prototype, 'map',    function(cb){ var that = this
+   define(Object.prototype, 'map',    function(cb, thisObject){ var that = this
       return Object.keys(that).reduce(function(acc, key){
-         acc[key] = cb.call(that, that[key], key, that)
+         acc[key] = cb.call(thisObject, that[key], key, that)
          return acc }, new Object) })
    define(Object.prototype, 'reduce', function(cb, initial){ var that = this
       return Object.keys(that).reduce(function(acc, key){
-         return cb.call(that, acc, that[key], key, that) }, initial) })
+         return cb.call(null, acc, that[key], key, that) }, initial) })
    
    getter(Object.prototype, '‽', function(){ console.log(require('sys').inspect(this)); return this })
    getter(Object.prototype, '_', function(){ return this.toFunction? this.toFunction() : this })
