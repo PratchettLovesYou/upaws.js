@@ -464,25 +464,26 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
       if ( this.intervalID)
            this.intervalID = clearInterval(this.intervalID) }
    
-   World.prototype.ownBag = function(bag){ here = this
-      return bag
-        .filter(function(el, key){ return key.charAt(0) != '_' })
-        .map(function $$(el){ if (el) switch(el.constructor){
-            case Function: return el.curry(here)
-            case Thing: case Label: case Execution:
-               case Relation: return el
-            case Object:   return el.map($$) }}) }
+ //World.prototype.ownBag = function(bag){ here = this
+ //   return bag
+ //     .filter(function(el, key){ return key.charAt(0) != '_' })
+ //     .map(function $$(el){ if (el) switch(el.constructor){
+ //         case Function: return el.curry(here)
+ //         case Thing: case Label: case Execution:
+ //            case Relation: return el
+ //         case Object:   return el.map($$) }}) }
    
    World.prototype.applyGlobals = function(root){ var here = this
-      function $$(el, key){ if (el) switch(el.constructor){
-         case Function: return Execution.synchronous(el).name(key)
-         case Label: case Execution:
-            case Thing: return (el.named? el : el.name(key)).irresponsible
-         case Relation: return el
-         case Object:   return new Thing(el.map($$)).responsible }} 
+      function $$(el, key){ var name = (this.n ? this.n+' ' : '')+key
+         if (el) switch(el.constructor){
+            case Function: return Execution.synchronous(el).name(name)
+            case Label: case Execution:
+               case Thing: return (el.named? el : el.name(name)).irresponsible
+            case Relation: return el
+            case Object:   return new Thing(el.map($$, {n:name})).name(name).responsible }} 
       root.locals.push({
-         infrastructure: new Thing( paws.infrastructure.map($$) ).name('infrastructure')
-       , implementation: new Thing( paws.implementation.map($$) ).name('implementation')          }) }
+         infrastructure: $$(paws.infrastructure, 'infrastructure').to
+       , implementation: $$(paws.implementation, 'implementation').to                           }) }
    
    /* Alien families
    // ============== */                                                        paws.infrastructure =
