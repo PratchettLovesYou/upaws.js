@@ -7,8 +7,8 @@ Object.keys(paws)
       global[key] = paws[key] })
 
 // Example invocation:
-//     DEBUG=9 ./examples/05-realize.js 'infrastructure whee!()'
-//     DEBUG=9 ./examples/05-realize.js 'infrastructure print() abc' # FIXME
+//     DEBUG=9 ./examples/05-realize.js 'whee!()'
+//     DEBUG=9 ./examples/05-realize.js 'implementation util print abc'
 
 
 ~function(){ var juxt, rv = 0, u = undefined
@@ -19,6 +19,8 @@ Object.keys(paws)
       earth.stage(caller, new Label(''), $) })
    .name('whee!')
    
+   earth.applyGlobals(root)
+   
    console.log(debug.ANSI.bold("=== Let's go! ==="))
    earth.start()
    
@@ -26,8 +28,7 @@ Object.keys(paws)
      , foo = new Thing({bar: bar}).name('foo')
    root.locals.push({foo: foo})
    
-   var inf = new Thing({'whee!': whee}).name('infrastructure')
-   root.locals.push({infrastructure: inf})
+   root.locals.push({'whee!': whee})
    
    earth.stage(root)
 }()
