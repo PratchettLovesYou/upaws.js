@@ -322,7 +322,8 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
    Thing.prototype.receiver = new Execution(function(rv, here){ var arguments = rv.toArray()
     , results = arguments[1].find(arguments[2])
       if (results[0])
-         here.stage(arguments[0], results[0]) })
+         here.stage(arguments[0], results[0])
+      else debug.error()('No results') })
    .name('thing×')
    
    Execution.prototype.receiver = new Execution(function(rv, here){ var arguments = rv.toArray()
