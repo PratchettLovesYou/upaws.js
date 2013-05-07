@@ -160,13 +160,11 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
       it.subs = new Array(arity).join().split(',').map(function(){
          return function(caller, rv, here){
             this.subs.last = this.subs.last.curry(rv)
-            here.queue.push(new Staging(caller, this))
-            here.realize() } })
+            here.stage(caller, this) } })
       
       it.subs.first = function(caller, here){ var that = this
          that.subs = that.subs.map(function(sub){ return sub.curry(caller) })
-         here.queue.push(new Staging(caller, that))
-         here.realize() }
+         here.stage(caller, that) }
       
       it.subs[arity] = Function.apply(null, ['paws', 'func', 'caller'].concat(
          Array(arity + 1).join('_').split(''), 'here',                                          "\n"
@@ -174,8 +172,7 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
           +"                    , world: arguments[arguments.length - 1] }"                    +"\n"
           +"                  , [].slice.call(arguments, 3) )"                                 +"\n"
           +"if (typeof rv !== 'undefined') {"                                                  +"\n"
-          +"   here.queue.push(new paws.Staging(caller, rv))"                                  +"\n"
-          +"   here.realize() }"))
+          +"   here.stage(caller, rv) }"))
       .curry(paws, func)
       
       return it }
@@ -316,16 +313,14 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
    
    /* Interpretation
    // ============== */
-   Thing.prototype.receiver = new Execution(function(rv, $){ var arguments = rv.toArray()
+   Thing.prototype.receiver = new Execution(function(rv, here){ var arguments = rv.toArray()
     , results = arguments[1].find(arguments[2])
-      if (results[0]) {
-         $.queue.push(new Staging(arguments[0], results[0]))
-         $.realize() } })
+      if (results[0])
+         here.stage(arguments[0], results[0]) })
    .name('thing×')
    
-   Execution.prototype.receiver = new Execution(function(rv, $){ var arguments = rv.toArray()
-      $.queue.push(new Staging(arguments[1].clone(), arguments[2]))
-      $.realize() })
+   Execution.prototype.receiver = new Execution(function(rv, here){ var arguments = rv.toArray()
+      here.stage(arguments[1].clone(), arguments[2]) })
    .name('execution×')
                                                                                          paws.Mask =
    Mask = function(roots){ var it = construct(this)
@@ -389,9 +384,9 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
    //       ‘external-charge’ (and figure out if the latter should even *exist*. Isn't “sharing
    //       ownership” fundamentally different, anyway?)
    World.prototype.stage =
-   World.prototype.own = function(execution, resumptionValue, requestedMask){
+   World.prototype.own = function(execution, resumptionValue, requestedMask, incrementRealizeCount){
       this.queue.push(new Staging(execution, resumptionValue, requestedMask))
-      this.realize() }
+      if ((typeof incrementRealizeCount != 'undefined') && incrementRealizeCount) this.realize() }
    
    World.prototype.has    = function(it, what){ var that = this
       return  that.table.masks
@@ -437,7 +432,7 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
             jx.call(st.stagee, st.resumptionValue, here)
          else {
             rv = new Thing; rv.push(jx.context, jx.left, jx.right)
-            here.queue.push(new Staging(jx.left.receiver.clone(), rv))
+            here.stage(jx.left.receiver.clone(), rv, null, false)
             ++here.count
          }
          
@@ -550,8 +545,7 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
        , debugger:   Execution(function(){ debugger })
       }
     , void: Execution(function(caller, here){ return function void_(_,here){
-         here.queue.push(new Staging(caller, Execution(void_)))
-         here.realize() }(_,here) })                                                               }
+         here.stage(caller, Execution(void_)) }(_,here) })                                                               }
    
                                                                                                                   /*|*/;paws.utilities = new Object()
                                                                            paws.utilities.parseNum =
@@ -767,12 +761,8 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
                read.prompt()
             }).name('<resume prompt>')
             
-         // TODO: convenience for world.queue.push, new Mask, realize() pattern
-            here.queue.push(new Staging(expression ,u, new Mask([mutex])))
-            here.realize()
-            
-            here.queue.push(new Staging(resumption ,u, new Mask([mutex])))
-            here.realize()
+            here.own(expression ,u, mutex)
+            here.own(resumption ,u, mutex)
          } catch(e) {
             console.log(e.message); console.log(e.stack)
             read.prompt() }
@@ -833,8 +823,7 @@ if (require.main === module && process.argv.length > 2) ~function(){ var
       earth.start()
    
    roots.forEach(function(root){ if (!root) return
-      earth.queue.push(new Staging(root))
-      earth.realize() })
+      earth.stage(root) })
    
    if (argv.i)
       paws.REPL(earth)

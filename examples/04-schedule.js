@@ -7,7 +7,7 @@ Object.keys(paws)
       global[key] = paws[key] })
 
 // Example invocation:
-//     DEBUG=9 ./examples/04-schedule.js
+//     ./examples/04-schedule.js
 
 ~function(){ var u
  , earth = new World()
@@ -69,8 +69,8 @@ Object.keys(paws)
    
    some_thing.metadata[1] = some_child.responsible
    
-   earth.queue.push(new Staging(greedy))
-   earth.queue.push(new Staging(desirous))
+   earth.stage(greedy   ,u,u, false)
+   earth.stage(desirous ,u,u, false)
    
    console.log(debug.ANSI.bold("=== Let's go!"))
    earth.start()
