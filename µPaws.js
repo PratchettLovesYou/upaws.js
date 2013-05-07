@@ -32,7 +32,7 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
       return ANSI.brblack('❲'+it.id+(it.named?':'+it.name:'')+'❳') }
    
    getter(Thing.prototype, 'named', function(){ return this.hasOwnProperty('name') })
-   Thing.prototype.name = function(name){ this.name = name; return this }
+   Thing.prototype.name = function(name){ if (name) this.name = name; return this }
    Thing.prototype._name = function(name){
       this        .named = true
       this        .toString = function(){ return name }; return this }
