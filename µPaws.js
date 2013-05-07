@@ -177,6 +177,12 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
       
       return it }
       
+   Execution.prototype.name = function(name){
+      if (this.alien)
+          this.subs.forEach(function(sub, idx){ sub.__identifier__ = name + subscript(idx) })
+      return this.constructor.parent ?
+             this.constructor.parent.prototype.name.apply(this, arguments)
+           : this }
    
    Execution.prototype.toString = function toString() { return this.alien
     ? ANSI.brmagenta(this.named? '´'+this.name+'´' : '´anon´')
@@ -721,6 +727,10 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
    ANSI.forEach(function(name, code){ ANSI[name] = ANSI.wrap(code, 39) })
    ANSI.reset = ANSI.SGR(00)
    ANSI.bold = ANSI.wrap(1, 22); ANSI.underline = ANSI.wrap(04, 24); ANSI.underline = ANSI.wrap(07, 07)
+   
+   subscript = function(num){ var
+      digits = num.toString().split('')
+      return digits.reduce(function(str, digit){ return str + String.fromCharCode(0x2080 + parseInt(digit)) }, '') }
                                                                                                                   /*|*/ }) // one()
 // if (DEBUG >= 7) // This is about as robust as ... something not-very-robust. lolwhatever.
 // ~function __identifier__(o, seen){ if (seen.indexOf(o) >= 0) return; seen.push(o)
