@@ -17,7 +17,8 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
                                                                                                                   /*|*/ (function one($){ $(function two($){
                                                                                         paws.Thing =
    Thing = function(noughtify){ var it = construct(this)
-      it.id = Thing.counter++
+      it.id = uuid()
+      it._count = ++Thing.count
       it.metadata = new Array
       if (typeof noughtify !== 'boolean')
          it.push.apply(it, [].slice.apply(arguments))
@@ -26,10 +27,11 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
          it.metadata.unshift(undefined)
       return it }
    Thing.prototype.receiver = /* defined below */                                                                 /*|*/ undefined
-   Thing.counter = 1
+   Thing.count = 0
    
-   Thing.inspectID = function(it) {
-      return ANSI.brblack('❲'+it.id+(it.named?':'+it.name:'')+'❳') }
+   Thing.inspectID = function(it) { var
+      digits = Math.max(3, Math.floor(Thing.count.toString(2).length / 4)) + 1
+      return ANSI.brblack('❲'+it.id.substr(0,digits)+(it.named?':'+it.name:'')+'❳') }
    
    getter(Thing.prototype, 'named', function(){ return this.hasOwnProperty('name') })
    Thing.prototype.name = function(name){ if (name) this.name = name; return this }
@@ -676,6 +678,9 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
       result.toString = that.toString.bind(that)
       result.final = that.final || that
       return result })
+   
+   // /ht https://gist.github.com/LeverOne/1308368
+   uuid = function(a,b){for(b=a='';a++<36;b+=a*51&52?(a^15?8^Math.random()*(a^20?16:4):4).toString(16):'-');return b}
    
    /* Debugging
    // ========= */
