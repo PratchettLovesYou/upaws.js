@@ -11,7 +11,6 @@ Object.keys(paws)
 
 ~function(){ var u
  , earth = new World()
- , infrastructure = earth.ownBag(paws.infrastructure)
    
  , foo = new Execution(
       function(rv, here){

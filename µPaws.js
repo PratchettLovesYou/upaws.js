@@ -352,7 +352,7 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
       return this.roots.reduce(function(acc, root){ var $$
          return ($$ = function(acc, it){ acc.push(it)
             return it.metadata.reduce(function(acc, relation){
-               if (relation.isResponsible) acc.push(relation.to)
+               if (relation && relation.isResponsible) acc.push(relation.to)
                return acc }, acc) })(acc, root) }, new Array()) }
    
    // Compare with a foreign mask for conflicting responsibility
