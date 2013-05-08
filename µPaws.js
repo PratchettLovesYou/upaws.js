@@ -15,7 +15,10 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
    
   , paws = new Object()                                                                                           /*|*/;~function $(l,n){ l(function(i){n=i}); if(n)$(n) }
                                                                                                                   /*|*/ (function one($){ $(function two($){
-                                                                                        paws.Thing =
+   
+   
+/* Types
+// ===== */                                                                             paws.Thing =
    Thing = function(noughtify){ var it = construct(this)
       it.id = uuid()
       it._count = ++Thing.count
@@ -273,8 +276,9 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
    }
    
    
-   /* Parsing
-   // ======= */                                                                   paws.Expression =
+   
+/* Parsing
+// ======= */                                                                      paws.Expression =
    Expression = function(contents, next){ var it = construct(this)
       it.contents = contents || undefined
       it.next = next || undefined
@@ -325,8 +329,8 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
    
    
    
-   /* Interpretation
-   // ============== */
+/* Interpretation
+// ============== */
    Thing.prototype.receiver = new Execution(function(rv, here){ var arguments = rv.toArray()
     , results = arguments[1].find(arguments[2])
       if (results[0])
@@ -337,6 +341,7 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
    Execution.prototype.receiver = new Execution(function(rv, here){ var arguments = rv.toArray()
       here.stage(arguments[1].clone(), arguments[2]) })
    .name('execution×')
+   
                                                                                          paws.Mask =
    Mask = function(roots){ var it = construct(this)
       it.roots = roots || [/* Thing */]
@@ -493,8 +498,10 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
          infrastructure: $$(paws.infrastructure, 'infrastructure').to
        , implementation: $$(paws.implementation, 'implementation').to                           }) }
    
-   /* Alien families
-   // ============== */                                                        paws.infrastructure =
+   
+   
+/* Alien families
+// ============== */                                                           paws.infrastructure =
 // A lot of uncertain shit in this.
 //  - There's no number type; so I do some stupid shit with decimal-numeric labels. Very fragile,
 //    not intended to last.
@@ -571,8 +578,10 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
       || isNaN(number))                number = 0
       return number }
    
-   /* Plumbing                                                                                                    /*|*/ }) // two()
-   // ======== */
+   
+   
+/* Plumbing                                                                                                    /*|*/ }) // two()
+// ======== */
    noop = function noop(arg){ return arg }
    
    inherits = function(parent, constructor){ var
@@ -688,8 +697,10 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
    // /ht https://gist.github.com/LeverOne/1308368
    uuid = function(a,b){for(b=a='';a++<36;b+=a*51&52?(a^15?8^Math.random()*(a^20?16:4):4).toString(16):'-');return b}
    
-   /* Debugging
-   // ========= */
+   
+   
+/* Debugging
+// ========= */
    // FIXME: This is all a massive, buggy, tightly-coupled clusterfuck.
    P = function P(it) {return (log.element||noop).call(log,
       it ? (it.constructor === Thing? Thing.prototype.inspect.call(it, true) : it.toString()) : ANSI.red('null') )}
