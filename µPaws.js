@@ -19,16 +19,25 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
    
 /* Types
 // ===== */                                                                             paws.Thing =
-   Thing = function(noughtify){ var it = construct(this)
+   Thing = function(elements, options, structuredCall){ var it = construct(this)
+      if (structuredCall !== true) {
+         elements = [].slice.apply(arguments)
+         options = {} }
+      
       it.id = uuid()
       it._count = ++Thing.count
       it.metadata = new Array
-      if (typeof noughtify !== 'boolean')
-         it.push.apply(it, [].slice.apply(arguments))
-      if (noughtify === true ||
-         (arguments.callee.caller !== arguments.callee && it.metadata.length > 0))
+      if (typeof elements == 'object' && elements.length !== 0)
+         it.push.call(it, elements)
+      
+      if (options.noughtify !== false)
          it.metadata.unshift(undefined)
-      return it }
+   return it }
+   
+   Thing.with = function(options){ var that = this
+      return function(){
+         return Thing.call(that, [].slice.apply(arguments), options, true) } }
+   
    Thing.prototype.receiver = /* defined below */                                                                 /*|*/ undefined
    Thing.count = 0
    
@@ -90,7 +99,7 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
    getter(Thing.prototype,     'responsible',   function(){ return R(this).responsible })
    getter(Thing.prototype,     'irresponsible', function(){ return R(this).irresponsible })
    
-   Thing.prototype.clone = function(to){ var to = to || new Thing()
+   Thing.prototype.clone = function(to){ var to = to || new Thing.with({noughtify: false}) ()
        if (Thing.parent)
       to = Thing.parent.prototype.clone.call(this, to)
       
@@ -98,7 +107,7 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
       
       return to }
    
-   Thing.pair = function(key, value){ return new Thing( new Label(key), value ).responsible }
+   Thing.pair = function(key, value){ return new Thing(new Label(key), value).responsible }
    
    Thing.prototype.toArray = function(){
       return this.metadata.map(function(e){ return e? e.to:e }) }
@@ -113,6 +122,7 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
          case Array:    return [].concat.apply([]
                          , that.map(function(el){ return Thing.toRelations(el, resp, seen) }))
          default:       return Object.keys(that).map(function(key){ var
+                           // FIXME: Following two lines should be a single call
                            pair = new Thing(new Label(key).responsible) // May be redundant
                            pair.push.apply(pair, Thing.toRelations(that[key], resp, seen))
                            return pair.responsible }) } }()]) && seen.last
@@ -133,8 +143,9 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
                                                                                         paws.Label =
    Label = function(string){ var it = construct(this)
       it.string = string || undefined
-      return it }
+   return it }
    inherits(Thing, Label)
+   
    Label.prototype.toString = function(){ return ANSI.cyan('“'+this.string+'”') }
    
    Label.prototype.clone = function(to){ var to = to || new Label('')
@@ -149,7 +160,11 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
       return right instanceof Label && this.string === right.string }
                                                                                    ;paws.Execution =
    Execution = function(something){ var original, it = construct(this)
-         it.pristine = true
+      it.pristine = true
+      it.locals = new Thing().name('locals')
+      it.locals.push({locals: it.locals.irresponsible})
+      it       .push({locals: it.locals.responsible})
+      
       if (typeof something === 'function') {
          it.alien = true
          it.subs = Array.prototype.slice.call(arguments) }
@@ -157,12 +172,9 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
          it.position = something || undefined
          it.stack    = new Array }
       
-         it.locals = new Thing().name('locals')
-         it.locals.push({locals: R(it.locals, true)})
-         it       .push({locals: R(it.locals, true)})
-      
-      return it }
+   return it }
    inherits(Thing, Execution)
+   
    Execution.prototype.receiver = /* defined below */                                                             /*|*/ undefined
    
    Execution.synchronous = function(func){ var it = new Execution(new Function)
@@ -451,7 +463,7 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
          if (st.stagee.alien)
             jx.call(st.stagee, st.resumptionValue, here)
          else {
-            rv = new Thing; rv.push(jx.context, jx.left, jx.right)
+            rv = new Thing.with({noughtify: false}) (jx.context, jx.left, jx.right)
             here.stage(jx.left.receiver.clone(), rv, null, false)
             ++here.count
          }
@@ -510,7 +522,7 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
 //  - `branch`, `stage`, and `unstage` need to be re-thought-out in light of the *actual
 //    implementation design* that we've arrived at. Thoroughly.
    infrastructure = {
-      empty:      function(){ return new Thing(true) }
+      empty:      function(){ return new Thing() }
       
     , get:        function(thing, num){ return thing.metadata[parseNum(num)].to }
 //  , find:       function(thing, key){ return thing.find(key)[0] } // NYI: need a fromArray()
