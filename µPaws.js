@@ -85,12 +85,12 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
             //else content = ANSI.wrap('48;5;'+(232+(i)),i>1?'48;5;'+(232+(i-1)):49)(content) }
          
          return content
-         }(this, 0, []) }//+ANSI.SGR(49) }
+      }(this, 0, []) }//+ANSI.SGR(49) }
                                                                                      paws.Relation =
    R=Relation = function(to, resp){ var it = construct(this)
       it.to = to || undefined
       it.isResponsible = resp || undefined
-      return it }
+   return it }
    
    Relation.prototype.clone = function(){ return Relation(this.to, this.isResponsible) }
    
@@ -105,7 +105,7 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
       
       to.metadata = this.metadata.map(function(rel){ return rel? rel.clone() : rel })
       
-      return to }
+   return to }
    
    Thing.pair = function(key, value){ return new Thing(Label(key), value).responsible }
    
@@ -126,7 +126,7 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
                            pair = new Thing(Label(key).responsible) // May be redundant
                            pair.push.apply(pair, Thing.toRelations(that[key], resp, seen))
                            return pair.responsible }) } }()]) && seen.last
-      return result[1] }
+   return result[1] }
    
    Thing.prototype.push = function(){ this.metadata
     = this.metadata.concat(Thing.toRelations([].slice.apply(arguments))) }
@@ -154,7 +154,7 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
       
       to.string = this.string
       
-      return to }
+   return to }
    
    Label.prototype.compare = function(right){
       return right instanceof Label && this.string === right.string }
@@ -198,7 +198,7 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
           +"   here.stage(caller, rv) }"))
       .curry(paws, func)
       
-      return it }
+   return it }
       
    Execution.prototype.name = function(name){
       if (this.alien)
@@ -219,7 +219,7 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
                        : Expression.prototype.inspect.call({genesis: this.genesis})))
       this.alien && rv.push('subs: '+this.subs.length)
       rv.push('locals:   '+this.locals.inspect())
-      return rv.join("\n") }
+   return rv.join("\n") }
    
    // FIXME: All of the way this clones locals is undefined and wrong. I need to decide how I
    //        actually *want* this to happen. It's a confusing mess.
@@ -241,7 +241,7 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
       if (this.named)
           to.name     = this.name
       
-      return to }
+   return to }
    
    Execution.prototype.
    complete = function(){
@@ -284,8 +284,7 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
              , left: this.position.contents || this.locals
              , right: this.position.next.contents }
       this.position = this.position.next.next;
-      return juxt
-   }
+   return juxt }
    
    
    
@@ -294,7 +293,7 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
    Expression = function(contents, next){ var it = construct(this)
       it.contents = contents || undefined
       it.next = next || undefined
-      return it }
+   return it }
    
    Expression.prototype.toString = function(){}
    Expression.prototype.inspect = function(){ var g
@@ -337,7 +336,7 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
             $.append( genesis(new Expression(_),b,i) ); b = i }
          return genesis($,a,i) }
       
-      return expr() }
+   return expr() }
    
    
    
@@ -357,7 +356,7 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
                                                                                          paws.Mask =
    Mask = function(roots){ var it = construct(this)
       it.roots = roots || [/* Thing */]
-      return it }
+   return it }
    
    // Returns an array of all of the things that this `Mask`’s `roots` are responsible for.
    Mask.prototype.flatten = function(){
@@ -379,8 +378,7 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
       it.queue = [/* Staging */]
       it.table = { blamees: [/* execution */]
                  , masks:   [/* Mask */] }
-      
-      return it }
+   return it }
    
    // Non-concurrent implementation! Yay! </sarcasm>
    World.current = undefined
@@ -408,7 +406,7 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
       it.requestedMask = requestedMask instanceof Mask ? requestedMask
                        : requestedMask instanceof Array ? Mask(requestedMask)
                        : requestedMask ? Mask([requestedMask]) : requestedMask
-      return it }
+   return it }
    
    // NOTE: JS-API `own()` doesn't follow the current libside `#charge` semantics; I still don't
    //       know what to do about providing a resumptionValue to charge-calls. Feels like
@@ -588,7 +586,7 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
       if (number instanceof Label)     number = parseInt(number.string, 10)
       if (typeof number !== 'number'
       || isNaN(number))                number = 0
-      return number }
+   return number }
    
    
    
@@ -611,7 +609,7 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
          it = new F }
       if (caller.parent) {
           caller.parent.apply(it, passed) }
-      return it }
+   return it }
    
    
    define = function(prototype, property, value, setter){ var
@@ -644,7 +642,7 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
          if (that.indexOf(e) + them.indexOf(e) > -2) {
             that.deleteAll(e)
             them.deleteAll(e) } })
-      return this })
+   return this })
    define(Array.prototype, 'union', function(){ /* NYI */ })
    define(Array.prototype, 'deleteAll', function(element){ var i
       while ((i = this.indexOf(element)) !== -1)
@@ -704,7 +702,7 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
       
       result.toString = that.toString.bind(that)
       result.final = that.final || that
-      return result })
+   return result })
    
    // /ht https://gist.github.com/LeverOne/1308368
    uuid = function(a,b){for(b=a='';a++<36;b+=a*51&52?(a^15?8^Math.random()*(a^20?16:4):4).toString(16):'-');return b}
