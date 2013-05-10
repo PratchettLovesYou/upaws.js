@@ -13,7 +13,7 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
   , fs   = require('fs')
   , util = require('util')
    
-  , paws = new Object()                                                                                           /*|*/;~function $(l,n){ l(function(i){n=i}); if(n)$(n) }
+  , paws = new Object                                                                                             /*|*/;~function $(l,n){ l(function(i){n=i}); if(n)$(n) }
                                                                                                                   /*|*/ (function one($){ $(function two($){
    
    
@@ -92,7 +92,7 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
       it.isResponsible = resp || undefined
       return it }
    
-   Relation.prototype.clone = function(){ return new Relation(this.to, this.isResponsible) }
+   Relation.prototype.clone = function(){ return Relation(this.to, this.isResponsible) }
    
    chainee(Relation.prototype, 'responsible',   function(){ this.isResponsible = true; return this })
    chainee(Relation.prototype, 'irresponsible', function(){ this.isResponsible = false; return this })
@@ -107,7 +107,7 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
       
       return to }
    
-   Thing.pair = function(key, value){ return new Thing(new Label(key), value).responsible }
+   Thing.pair = function(key, value){ return new Thing(Label(key), value).responsible }
    
    Thing.prototype.toArray = function(){
       return this.metadata.map(function(e){ return e? e.to:e }) }
@@ -118,12 +118,12 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
       if (typeof that === 'object') switch (that.constructor){
          case Relation: return [that]
          case Execution: case Label: // FIXME: Ugly
-         case Thing:    return [new Relation(that, resp)]
+         case Thing:    return [Relation(that, resp)]
          case Array:    return [].concat.apply([]
                          , that.map(function(el){ return Thing.toRelations(el, resp, seen) }))
          default:       return Object.keys(that).map(function(key){ var
                            // FIXME: Following two lines should be a single call
-                           pair = new Thing(new Label(key).responsible) // May be redundant
+                           pair = new Thing(Label(key).responsible) // May be redundant
                            pair.push.apply(pair, Thing.toRelations(that[key], resp, seen))
                            return pair.responsible }) } }()]) && seen.last
       return result[1] }
@@ -161,7 +161,7 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
                                                                                    ;paws.Execution =
    Execution = function(something){ var original, it = construct(this)
       it.pristine = true
-      it.locals = new Thing().name('locals')
+      it.locals = (new Thing).name('locals')
       it.locals.push({locals: it.locals.irresponsible})
       it       .push({locals: it.locals.responsible})
       
@@ -177,7 +177,7 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
    
    Execution.prototype.receiver = /* defined below */                                                             /*|*/ undefined
    
-   Execution.synchronous = function(func){ var it = new Execution(new Function)
+   Execution.synchronous = function(func){ var it = Execution(new Function)
     , arity = func.length
       
       it.subs = new Array(arity).join().split(',').map(function(){
@@ -307,7 +307,7 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
    append = function(next){ var pos = this
       while (pos.next) pos = pos.next
       pos.next = next }
-                                                                                                                  /*|*/ paws.cPaws = cPaws = new Object()
+                                                                                                                  /*|*/ paws.cPaws = cPaws = new Object
    cPaws.labelCharacters = /[^(){} \n]/ // Not currently supporting quote-delimited labels
    
    cPaws.
@@ -332,7 +332,7 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
             $ = $.concat(text[i++])
          return $ && genesis(new Label($),a,i) }
       
-    , expr = function(){ var a = i, b = i, _, $ = new Expression()
+    , expr = function(){ var a = i, b = i, _, $ = new Expression
          while (_ = paren() || scope() || label() ) {
             $.append( genesis(new Expression(_),b,i) ); b = i }
          return genesis($,a,i) }
@@ -365,7 +365,7 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
          return ($$ = function(acc, it){ acc.push(it)
             return it.metadata.reduce(function(acc, relation){
                if (relation && relation.isResponsible) acc.push(relation.to)
-               return acc }, acc) })(acc, root) }, new Array()) }
+               return acc }, acc) })(acc, root) }, new Array) }
    
    // Compare with a foreign mask for conflicting responsibility
    Mask.prototype.conflictsWith = function(far){ if (far === this) return false; far = far.flatten()
@@ -417,7 +417,7 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
    //       ownership” fundamentally different, anyway?)
    World.prototype.stage =
    World.prototype.own = function(execution, resumptionValue, requestedMask, incrementRealizeCount){
-      this.queue.push(new Staging(execution, resumptionValue, requestedMask))
+      this.queue.push(Staging(execution, resumptionValue, requestedMask))
       if ((typeof incrementRealizeCount != 'undefined') && incrementRealizeCount) this.realize() }
    
    World.prototype.has    = function(it, what){ var that = this
@@ -522,7 +522,7 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
 //  - `branch`, `stage`, and `unstage` need to be re-thought-out in light of the *actual
 //    implementation design* that we've arrived at. Thoroughly.
    infrastructure = {
-      empty:      function(){ return new Thing() }
+      empty:      function(){ return new Thing }
       
     , get:        function(thing, num){ return thing.metadata[parseNum(num)].to }
 //  , find:       function(thing, key){ return thing.find(key)[0] } // NYI: need a fromArray()
@@ -582,7 +582,7 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
     , void: Execution(function(caller, here){ return function void_(_,here){
          here.stage(caller, Execution(void_)) }(_,here) })                                                               }
    
-                                                                                                                  /*|*/;paws.utilities = new Object()
+                                                                                                                  /*|*/;paws.utilities = new Object
                                                                            paws.utilities.parseNum =
    parseNum = function(number){
       if (number instanceof Label)     number = parseInt(number.string, 10)
@@ -789,7 +789,7 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
       console.log("  (⌃d to close the input-stream; ⌃c to synchronously force new input)")
       read.prompt()
       
-      sharedLocals = new Execution(new Function)
+      sharedLocals = Execution(new Function)
       here.applyGlobals(sharedLocals)
       sharedLocals = sharedLocals.locals
       
