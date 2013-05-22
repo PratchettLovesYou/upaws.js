@@ -861,8 +861,9 @@ if (require.main === module && process.argv.length > 2) ~function(){ var
          earth.applyGlobals(root)
          return root })
    
-   if (argv.help || argv.usage)
+   if (argv.help || argv.usage) {
       opt.showHelp()
+      argv.start = false }
    if (argv.start || typeof argv.start == 'undefined') // FIXME: Optimist is being a retard ...
       earth.start()
    
