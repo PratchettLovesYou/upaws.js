@@ -413,10 +413,11 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
    //       something's off in the *design*, here. Might need to split internal-charge away from
    //       ‘external-charge’ (and figure out if the latter should even *exist*. Isn't “sharing
    //       ownership” fundamentally different, anyway?)
+   // FIXME: I'm honestly unsure if `incrementRealizeCount` should default to `true`, or `false`.
    World.prototype.stage =
    World.prototype.own = function(execution, resumptionValue, requestedMask, incrementRealizeCount){
       this.queue.push(Staging(execution, resumptionValue, requestedMask))
-      if ((typeof incrementRealizeCount != 'undefined') && incrementRealizeCount) this.realize() }
+      if ((typeof incrementRealizeCount == 'undefined') || incrementRealizeCount) this.realize() }
    
    World.prototype.has    = function(it, what){ var that = this
       return  that.table.masks
