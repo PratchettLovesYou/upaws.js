@@ -497,7 +497,7 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
  //            case Relation: return el
  //         case Object:   return el.map($$) }}) }
    
-   World.prototype.applyGlobals = function(root){ var here = this
+   World.prototype.applyGlobals = function(root, object){ var here = this
       function $$(el, key){ var name = (this.n ? this.n+' ' : '')+key
          if (el) switch(el.constructor){
             case Function: return Execution.synchronous(el).name(name)
@@ -505,9 +505,13 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
                case Thing: return (el.named? el : el.name(name)).clone().irresponsible
             case Relation: return el
             case Object:   return new Thing(el.map($$, {n:name})).name(name).responsible }} 
-      root.locals.push({
-         infrastructure: $$(paws.infrastructure, 'infrastructure').to
-       , implementation: $$(paws.implementation, 'implementation').to                           }) }
+      
+      if (object == null) object = {}
+      if (object.implementation == null) {
+         object.implementation = paws.implementation }
+         object.infrastructure = paws.infrastructure
+      
+      root.locals.push( object.map(function(val, key){ return $$(val, key).to }) ) }
    
    
    
