@@ -502,7 +502,7 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
          if (el) switch(el.constructor){
             case Function: return Execution.synchronous(el).name(name)
             case Label: case Execution:
-               case Thing: return (el.named? el : el.name(name)).irresponsible
+               case Thing: return (el.named? el : el.name(name)).clone().irresponsible
             case Relation: return el
             case Object:   return new Thing(el.map($$, {n:name})).name(name).responsible }} 
       root.locals.push({
