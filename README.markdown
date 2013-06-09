@@ -1,4 +1,4 @@
-`µPaws.js`
+`µpaws.js`
 =========
 Some small Paws, written in JavaScript on top of [Node.js][]. Used for rapid-prototyping and general
 tomfoolery of all sorts. **Do not expect stability, completeness, or sanity.** Do expect bugs,

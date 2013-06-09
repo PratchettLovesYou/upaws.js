@@ -785,7 +785,7 @@ var /* Types: */           Thing, R,Relation, Label, Execution                  
     , read = require('readline').createInterface({ input: process.stdin, output: process.stdout })
       read.setPrompt(':: ')
       
-      process.title = 'µPaws.js REPL' // No-op on OS X, as of Node v0.8.16 #fuckmesideways
+      process.title = 'µpaws.js REPL' // No-op on OS X, as of Node v0.8.16 #fuckmesideways
       
       console.log("Successive lines will be parsed as individual executions, with shared locals.")
       console.log("  (make sure you understand the basics: `less Getting.Started.*`)")

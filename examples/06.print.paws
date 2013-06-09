@@ -1,3 +1,3 @@
-#!/usr/bin/env node ./µPaws.js --no-start -f
+#!/usr/bin/env node ./µpaws.js --no-start -f
 
 implementation util print Whee!

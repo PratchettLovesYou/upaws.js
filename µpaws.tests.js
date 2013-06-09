@@ -1,8 +1,8 @@
-// This file is to be concatenated to µPaws.js and then executed.
+// This file is to be concatenated to µpaws.js and then executed.
 
 // In zsh:
 // 
-//     node =(cat µPaws{,.tests}.js)
+//     node =(cat µpaws{,.tests}.js)
 
 if (require.main === module)
 ~function(){ var testing = new Object, Battery, $,Check, pending, broken
@@ -155,7 +155,7 @@ new Check()
 new Check(  cPaws.parse('')  )
 (function(locals){ return typeof locals.contents === 'undefined' })
 
-var some_string = 'µPaws'
+var some_string = 'µpaws'
 new Check(  cPaws.parse(some_string) .next  )
 (function(label_node){ return label_node.contents instanceof Label })
 (function(label_node){ return label_node.contents.string === some_string })
@@ -242,7 +242,7 @@ new Check(  new Execution(cPaws.parse(''))  )
 (function(native){ return pending; return  native.complete() })
 (function(native){ return pending; return typeof native.advance() === 'undefined' })
 
-var some_string = 'µPaws'
+var some_string = 'µpaws'
 ~function(){
 var  a_native = new Execution(cPaws.parse(some_string))
 ,      locals = a_native.position
